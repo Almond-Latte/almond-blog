@@ -1,10 +1,11 @@
-import type Author from './author'
+import type TableOfContent from './tableOfContent'
 
 type PostType = {
-  slug: string
-  title: string
-  date: string
-  content: string
+  slug: string;
+  title: string;
+  date: string;
+  content: string;
+  tableOfContents: TableOfContent[];
 }
 
 export default PostType
