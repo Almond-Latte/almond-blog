@@ -1,8 +1,4 @@
 import Head from 'next/head'
-<<<<<<< Updated upstream
-=======
-import { HOME_OG_IMAGE_URL } from '../lib/constants'
->>>>>>> Stashed changes
 
 const Meta = () => {
   return (
@@ -37,11 +33,7 @@ const Meta = () => {
       <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
       <meta
         name="description"
-<<<<<<< Updated upstream
         content={`A statically generated blog example using Next.js and .`}
-=======
-        content={`A statically generated blog example using Next.js and CMS_NAME.`}
->>>>>>> Stashed changes
       />
     </Head>
   )
