@@ -1,10 +1,10 @@
-import DateFormatter from './date-formatter'
-import PostTitle from './post-title'
+import DateFormatter from './date-formatter';
+import PostTitle from './post-title';
 
 type Props = {
-  title: string
-  date: string
-}
+  title: string;
+  date: string;
+};
 
 const PostHeader = ({ title, date }: Props) => {
   return (
@@ -12,7 +12,7 @@ const PostHeader = ({ title, date }: Props) => {
       <PostTitle>{title}</PostTitle>
       <DateFormatter dateString={date} />
     </>
-  )
-}
+  );
+};
 
-export default PostHeader
+export default PostHeader;

@@ -1,4 +1,4 @@
-import type TableOfContent from './tableOfContent'
+import type TableOfContent from './tableOfContent';
 
 type PostType = {
   slug: string;
@@ -6,6 +6,6 @@ type PostType = {
   date: string;
   content: string;
   tableOfContents: TableOfContent[];
-}
+};
 
-export default PostType
+export default PostType;
