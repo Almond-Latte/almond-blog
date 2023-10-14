@@ -1,5 +1,5 @@
 .li_h2::marker {
-  color: aquamarine ;
+  color: aquamarine;
 }
 .li_h3::marker {
   list-style-type: none;
