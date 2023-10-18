@@ -8,5 +8,5 @@
     "source.fixAll": true
   },
   "eslint.alwaysShowStatus": true,
-  "scss.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore"
 }
