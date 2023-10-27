@@ -28,30 +28,36 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
   }
   return (
     <Layout preview={preview}>
-      <Container>
-        <Header />
-        {router.isFallback ? (
-          <PostTitle>Loading…</PostTitle>
-        ) : (
-          <>
-            <article className='mb-16 znc'>
-              <Head>
-                <title>{title}</title>
-                <meta name='description' content='blog' />
-              </Head>
-              <div className='max-w-screen-lg mx-auto px-6 py-6' id='article'>
-                <div className='flex flex-row'>
-                  <div className='p-4 shadow-md rounded-xl mb-6 bg-white'>
-                    <PostHeader title={post.title} date={post.date} />
-                    <PostBody content={post.content} />
+      <div className='border-b'>
+        <Container>
+          <Header />
+        </Container>
+      </div>
+      <div className='bg-amber-50'>
+        <Container>
+          {router.isFallback ? (
+            <PostTitle>Loading…</PostTitle>
+          ) : (
+            <>
+              <article className='mb-16 znc'>
+                <Head>
+                  <title>{title}</title>
+                  <meta name='description' content='blog' />
+                </Head>
+                <div className='max-w-screen-lg mx-auto px-6 py-6' id='article'>
+                  <div className='flex flex-row'>
+                    <div className='p-4 shadow-md rounded-xl mb-6 bg-white'>
+                      <PostHeader title={post.title} date={post.date} />
+                      <PostBody content={post.content} />
+                    </div>
+                    <PostTableOfContent tableOfContents={post.tableOfContents} />
                   </div>
-                  <PostTableOfContent tableOfContents={post.tableOfContents} />
                 </div>
-              </div>
-            </article>
-          </>
-        )}
-      </Container>
+              </article>
+            </>
+          )}
+        </Container>
+      </div>
     </Layout>
   );
 }
