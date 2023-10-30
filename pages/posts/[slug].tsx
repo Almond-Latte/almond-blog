@@ -36,8 +36,11 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
     const tocMap = new Map();
 
     contents.forEach((content, i) => {
-      tocMap.set(content, toc.item(i));
-      tocMap.set(toc.item(i), content);
+      // タイトルはスキップする
+      if (i > 0) {
+        tocMap.set(content, toc.item(i - 1));
+        tocMap.set(toc.item(i - 1), content);
+      }
     });
 
     const options = {
@@ -60,11 +63,13 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
     const observer = new IntersectionObserver(intersectCallback, options);
 
     // コンテンツをIntersectionObserverに登録
-    contents.forEach((content) => {
-      observer.observe(content);
+    contents.forEach((content, i) => {
+      // タイトルはスキップする
+      if (i > 0) {
+        observer.observe(content);
+      }
     });
   }
-
   return (
     <Layout preview={preview}>
       <div className='border-b'>
@@ -78,7 +83,11 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
             <PostTitle>Loading…</PostTitle>
           ) : (
             <>
-              <PostHeader title={post.title} date={post.date} />
+              <PostHeader
+                title={post.title}
+                postDate={post.postDate}
+                updateDate={post.updateDate}
+              />
               <article className='mb-16'>
                 <Head>
                   <title>{title}</title>
@@ -110,7 +119,8 @@ type Params = {
 export async function getStaticProps({ params }: Params) {
   const post = getPostBySlug(params.slug, [
     'title',
-    'date',
+    'postDate',
+    'updateDate',
     'slug',
     'author',
     'content',
