@@ -13,6 +13,9 @@ import markdownToHtml from 'zenn-markdown-html';
 import type PostType from '../../interfaces/post';
 import type TableOfContent from '../../interfaces/tableOfContent';
 import { JSDOM } from 'jsdom';
+import type {} from 'typed-query-selector';
+import tocStyles from '../../styles/tableOfContent-styles.module.css';
+import { Alexandria } from 'next/font/google';
 
 type Props = {
   post: PostType;
@@ -26,32 +29,83 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
   if (!router.isFallback && !post?.slug) {
     return <ErrorPage statusCode={404} />;
   }
+  if (typeof document !== 'undefined') {
+    // intersectionの監視対象
+    const contents = document.querySelectorAll('h1,h2');
+    const toc = document.querySelectorAll('.toc');
+    const tocMap = new Map();
+
+    contents.forEach((content, i) => {
+      // タイトルはスキップする
+      if (i > 0) {
+        tocMap.set(content, toc.item(i - 1));
+        tocMap.set(toc.item(i - 1), content);
+      }
+    });
+
+    const options = {
+      root: null,
+      rootMargin: '-1px 0px -99% 0px',
+    };
+
+    const intersectCallback = (entries: any) => {
+      entries.forEach((entry: any) => {
+        if (entry.isIntersecting) {
+          const currentActiveIndex = document.querySelector(`.${tocStyles.active}`);
+          if (currentActiveIndex !== null) {
+            currentActiveIndex.classList.remove(`${tocStyles.active}`);
+          }
+          tocMap.get(entry.target).classList.add(`${tocStyles.active}`);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(intersectCallback, options);
+
+    // コンテンツをIntersectionObserverに登録
+    contents.forEach((content, i) => {
+      // タイトルはスキップする
+      if (i > 0) {
+        observer.observe(content);
+      }
+    });
+  }
   return (
     <Layout preview={preview}>
-      <Container>
-        <Header />
-        {router.isFallback ? (
-          <PostTitle>Loading…</PostTitle>
-        ) : (
-          <>
-            <article className='mb-16 znc'>
-              <Head>
-                <title>{title}</title>
-                <meta name='description' content='blog' />
-              </Head>
-              <div className='max-w-screen-lg mx-auto px-6 py-6' id='article'>
-                <div className='flex flex-row'>
-                  <div className='p-4 shadow-md rounded-xl mb-6 bg-white'>
-                    <PostHeader title={post.title} date={post.date} />
-                    <PostBody content={post.content} />
+      <div className='border-b'>
+        <Container>
+          <Header />
+        </Container>
+      </div>
+      <div className='bg-amber-50'>
+        <Container>
+          {router.isFallback ? (
+            <PostTitle>Loading…</PostTitle>
+          ) : (
+            <>
+              <PostHeader
+                title={post.title}
+                postDate={post.postDate}
+                updateDate={post.updateDate}
+              />
+              <article>
+                <Head>
+                  <title>{title}</title>
+                  <meta name='description' content='blog' />
+                </Head>
+                <div className='max-w-screen-xl mx-auto px-6 py-6' id='article'>
+                  <div className='flex flex-row'>
+                    <div className='p-4 shadow-md rounded-xl mb-20 bg-white znc'>
+                      <PostBody content={post.content} />
+                    </div>
+                    <PostTableOfContent tableOfContents={post.tableOfContents} />
                   </div>
-                  <PostTableOfContent tableOfContents={post.tableOfContents} />
                 </div>
-              </div>
-            </article>
-          </>
-        )}
-      </Container>
+              </article>
+            </>
+          )}
+        </Container>
+      </div>
     </Layout>
   );
 }
@@ -65,20 +119,21 @@ type Params = {
 export async function getStaticProps({ params }: Params) {
   const post = getPostBySlug(params.slug, [
     'title',
-    'date',
+    'postDate',
+    'updateDate',
     'slug',
     'author',
     'content',
     'ogImage',
     'coverImage',
   ]);
-  const content = await markdownToHtml(post.content || '');
+  const content = markdownToHtml(post.content || '');
 
   // HTML(string)をHTML(DOM)に変換
   const domHtml = new JSDOM(content).window.document;
 
   // DOMから目次を検索，{hタグレベル，タイトル名，リンク先}，を取得する
-  const elements = domHtml.querySelectorAll<HTMLElement>('h2, h3');
+  const elements = domHtml.querySelectorAll<HTMLElement>('h1, h2');
   const tableOfContents: TableOfContent[] = [];
   elements.forEach((element) => {
     const level = element.tagName;

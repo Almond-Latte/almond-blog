@@ -16,24 +16,41 @@ export default function Index({ allPosts }: Props) {
   const morePosts = allPosts.slice(1);
   return (
     <>
-      <Layout>
-        <Head>
-          <title>{`Next.js Blog Example with `}</title>
-        </Head>
-        <Container>
-          <Intro />
-          {heroPost && (
-            <HeroPost title={heroPost.title} date={heroPost.date} slug={heroPost.slug} />
-          )}
-          {morePosts.length > 0 && <MoreStories posts={morePosts} />}
-        </Container>
-      </Layout>
+      <div className='bg-amber-50 m-0'>
+        <Layout>
+          <Head>
+            <title>Almond Latte&apos;s Blog</title>
+          </Head>
+          <Container>
+            <Intro />
+          </Container>
+          <Container>
+            {heroPost && (
+              <HeroPost
+                title={heroPost.title}
+                postDate={heroPost.postDate}
+                updateDate={heroPost.updateDate}
+                slug={heroPost.slug}
+              />
+            )}
+            {morePosts.length > 0 && <MoreStories posts={morePosts} />}
+          </Container>
+        </Layout>
+      </div>
     </>
   );
 }
 
 export const getStaticProps = async () => {
-  const allPosts = getAllPosts(['title', 'date', 'slug', 'author', 'coverImage', 'excerpt']);
+  const allPosts = getAllPosts([
+    'title',
+    'postDate',
+    'updateDate',
+    'slug',
+    'author',
+    'coverImage',
+    'excerpt',
+  ]);
 
   return {
     props: { allPosts },
