@@ -31,7 +31,7 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
   }
   if (typeof document !== 'undefined') {
     // intersectionの監視対象
-    const contents = document.querySelectorAll('h2,h3');
+    const contents = document.querySelectorAll('h1,h2');
     const toc = document.querySelectorAll('.toc');
     const tocMap = new Map();
 
@@ -53,18 +53,15 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
             currentActiveIndex.classList.remove(`${tocStyles.active}`);
           }
           tocMap.get(entry.target).classList.add(`${tocStyles.active}`);
-          console.log('inserted');
         }
       });
     };
 
     const observer = new IntersectionObserver(intersectCallback, options);
 
-    console.log(contents);
     // コンテンツをIntersectionObserverに登録
     contents.forEach((content) => {
       observer.observe(content);
-      console.log('touroku');
     });
   }
 
@@ -81,6 +78,7 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
             <PostTitle>Loading…</PostTitle>
           ) : (
             <>
+              <PostHeader title={post.title} date={post.date} />
               <article className='mb-16'>
                 <Head>
                   <title>{title}</title>
@@ -89,7 +87,6 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
                 <div className='max-w-screen-xl mx-auto px-6 py-6' id='article'>
                   <div className='flex flex-row'>
                     <div className='p-4 shadow-md rounded-xl mb-20 bg-white znc'>
-                      <PostHeader title={post.title} date={post.date} />
                       <PostBody content={post.content} />
                     </div>
                     <PostTableOfContent tableOfContents={post.tableOfContents} />
@@ -126,7 +123,7 @@ export async function getStaticProps({ params }: Params) {
   const domHtml = new JSDOM(content).window.document;
 
   // DOMから目次を検索，{hタグレベル，タイトル名，リンク先}，を取得する
-  const elements = domHtml.querySelectorAll<HTMLElement>('h2, h3');
+  const elements = domHtml.querySelectorAll<HTMLElement>('h1, h2');
   const tableOfContents: TableOfContent[] = [];
   elements.forEach((element) => {
     const level = element.tagName;

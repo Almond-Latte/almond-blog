@@ -8,10 +8,12 @@ type Props = {
 
 const PostHeader = ({ title, date }: Props) => {
   return (
-    <>
+    <div className='py-16 text-center'>
       <PostTitle>{title}</PostTitle>
-      <DateFormatter dateString={date} />
-    </>
+      <div className='text-zinc-600'>
+        <DateFormatter dateString={date} />
+      </div>
+    </div>
   );
 };
 

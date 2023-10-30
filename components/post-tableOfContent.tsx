@@ -12,9 +12,9 @@ const PostTableOfContent = ({ tableOfContents }: Props) => {
           <p className='text-lg font-bold'>目次</p>
           <ul>
             {tableOfContents.map((TOC: TableOfContent) => {
-              if (TOC.level === 'H2') {
+              if (TOC.level === 'H1') {
                 return (
-                  <li className={`toc ${styles.li_h2} ${styles.toc}`} key={TOC.href}>
+                  <li className={`toc ${styles.li_h1} ${styles.toc}`} key={TOC.href}>
                     <a className={styles.href_h3} href={TOC.href}>
                       {TOC.title}
                     </a>
@@ -22,7 +22,7 @@ const PostTableOfContent = ({ tableOfContents }: Props) => {
                 );
               } else {
                 return (
-                  <li className={`toc ${styles.toc} ${styles.li_h3}`} key={TOC.href}>
+                  <li className={`toc ${styles.toc} ${styles.li_h2}`} key={TOC.href}>
                     <a className={styles.href_h3} href={TOC.href}>
                       {TOC.title}
                     </a>
