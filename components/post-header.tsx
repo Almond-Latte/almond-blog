@@ -1,17 +1,17 @@
-import DateFormatter from './date-formatter';
+import PostDate from './post-date';
 import PostTitle from './post-title';
-
 type Props = {
   title: string;
-  date: string;
+  postDate: string;
+  updateDate: string;
 };
 
-const PostHeader = ({ title, date }: Props) => {
+const PostHeader = ({ title, postDate, updateDate }: Props) => {
   return (
-    <div className='py-16 text-center'>
+    <div className='py-16'>
       <PostTitle>{title}</PostTitle>
-      <div className='text-zinc-600'>
-        <DateFormatter dateString={date} />
+      <div className='mt-5 flex justify-center'>
+        <PostDate postDate={postDate} updateDate={updateDate} />
       </div>
     </div>
   );

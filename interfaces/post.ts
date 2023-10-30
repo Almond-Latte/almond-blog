@@ -3,7 +3,8 @@ import type TableOfContent from './tableOfContent';
 type PostType = {
   slug: string;
   title: string;
-  date: string;
+  postDate: string;
+  updateDate: string;
   content: string;
   tableOfContents: TableOfContent[];
 };

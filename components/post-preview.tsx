@@ -1,13 +1,14 @@
-import DateFormatter from './date-formatter';
+import PostDate from './post-date';
 import Link from 'next/link';
 
 type Props = {
   title: string;
-  date: string;
+  postDate: string;
+  updateDate: string;
   slug: string;
 };
 
-const PostPreview = ({ title, date, slug }: Props) => {
+const PostPreview = ({ title, postDate, updateDate, slug }: Props) => {
   return (
     <div>
       <h3 className='text-3xl mb-3 leading-snug'>
@@ -16,7 +17,7 @@ const PostPreview = ({ title, date, slug }: Props) => {
         </Link>
       </h3>
       <div className='text-lg mb-4'>
-        <DateFormatter dateString={date} />
+        <PostDate postDate={postDate} updateDate={updateDate} />
       </div>
     </div>
   );
