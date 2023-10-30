@@ -13,6 +13,9 @@ import markdownToHtml from 'zenn-markdown-html';
 import type PostType from '../../interfaces/post';
 import type TableOfContent from '../../interfaces/tableOfContent';
 import { JSDOM } from 'jsdom';
+import type {} from 'typed-query-selector';
+import tocStyles from '../../styles/tableOfContent-styles.module.css';
+import { Alexandria } from 'next/font/google';
 
 type Props = {
   post: PostType;
@@ -26,6 +29,45 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
   if (!router.isFallback && !post?.slug) {
     return <ErrorPage statusCode={404} />;
   }
+  if (typeof document !== 'undefined') {
+    // intersectionの監視対象
+    const contents = document.querySelectorAll('h2,h3');
+    const toc = document.querySelectorAll('.toc');
+    const tocMap = new Map();
+
+    contents.forEach((content, i) => {
+      tocMap.set(content, toc.item(i));
+      tocMap.set(toc.item(i), content);
+    });
+
+    const options = {
+      root: null,
+      rootMargin: '-1px 0px -99% 0px',
+    };
+
+    const intersectCallback = (entries: any) => {
+      entries.forEach((entry: any) => {
+        if (entry.isIntersecting) {
+          const currentActiveIndex = document.querySelector(`.${tocStyles.active}`);
+          if (currentActiveIndex !== null) {
+            currentActiveIndex.classList.remove(`${tocStyles.active}`);
+          }
+          tocMap.get(entry.target).classList.add(`${tocStyles.active}`);
+          console.log('inserted');
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(intersectCallback, options);
+
+    console.log(contents);
+    // コンテンツをIntersectionObserverに登録
+    contents.forEach((content) => {
+      observer.observe(content);
+      console.log('touroku');
+    });
+  }
+
   return (
     <Layout preview={preview}>
       <div className='border-b'>
@@ -39,14 +81,14 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
             <PostTitle>Loading…</PostTitle>
           ) : (
             <>
-              <article className='mb-16 znc'>
+              <article className='mb-16'>
                 <Head>
                   <title>{title}</title>
                   <meta name='description' content='blog' />
                 </Head>
-                <div className='max-w-screen-lg mx-auto px-6 py-6' id='article'>
+                <div className='max-w-screen-xl mx-auto px-6 py-6' id='article'>
                   <div className='flex flex-row'>
-                    <div className='p-4 shadow-md rounded-xl mb-6 bg-white'>
+                    <div className='p-4 shadow-md rounded-xl mb-20 bg-white znc'>
                       <PostHeader title={post.title} date={post.date} />
                       <PostBody content={post.content} />
                     </div>
@@ -78,7 +120,7 @@ export async function getStaticProps({ params }: Params) {
     'ogImage',
     'coverImage',
   ]);
-  const content = await markdownToHtml(post.content || '');
+  const content = markdownToHtml(post.content || '');
 
   // HTML(string)をHTML(DOM)に変換
   const domHtml = new JSDOM(content).window.document;

@@ -19,7 +19,7 @@ export default function Index({ allPosts }: Props) {
       <div className='bg-amber-50 m-0'>
         <Layout>
           <Head>
-            <title>Almond Latte's Blog</title>
+            <title>Almond Latte&apos;s Blog</title>
           </Head>
           <Container>
             <Intro />
