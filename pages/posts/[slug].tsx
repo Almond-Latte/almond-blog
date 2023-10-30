@@ -88,7 +88,7 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
                 postDate={post.postDate}
                 updateDate={post.updateDate}
               />
-              <article className='mb-16'>
+              <article>
                 <Head>
                   <title>{title}</title>
                   <meta name='description' content='blog' />
