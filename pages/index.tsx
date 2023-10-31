@@ -16,7 +16,7 @@ export default function Index({ allPosts }: Props) {
   const morePosts = allPosts.slice(1);
   return (
     <>
-      <div className='bg-amber-50 m-0'>
+      <div className='bg-amber-50'>
         <Layout>
           <Head>
             <title>Almond Latte&apos;s Blog</title>

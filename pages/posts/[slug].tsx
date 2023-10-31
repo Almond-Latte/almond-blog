@@ -93,9 +93,9 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
                   <title>{title}</title>
                   <meta name='description' content='blog' />
                 </Head>
-                <div className='max-w-screen-xl mx-auto px-6 py-6' id='article'>
-                  <div className='flex flex-row'>
-                    <div className='p-4 shadow-md rounded-xl mb-20 bg-white znc'>
+                <div className='max-w-screen-xl mx-auto py-6' id='article'>
+                  <div className='lg:flex'>
+                    <div className='p-4 md:shadow-md md:rounded-xl mb-20 bg-white znc'>
                       <PostBody content={post.content} />
                     </div>
                     <PostTableOfContent tableOfContents={post.tableOfContents} />
