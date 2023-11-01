@@ -1,5 +1,5 @@
 .markdown {
-  @apply text-sm leading-relaxed;
+  @apply font-inter text-base leading-relaxed text-zinc-800;
 }
 
 .markdown p,
@@ -9,16 +9,19 @@
   @apply my-6;
 }
 
+.markdown code {
+  @apply font-code;
+}
 .markdown ul {
   @apply list-none;
 }
 
 .markdown h1 {
-  @apply text-3xl font-bold leading-snug;
+  @apply text-3xl font-bold leading-snug font-inter;
 }
 
 .markdown h2 {
-  @apply text-2xl font-bold leading-snug;
+  @apply text-2xl font-bold leading-snug font-inter;
 }
 
 .markdown h3 {

@@ -2,6 +2,7 @@
 title: 'テスト記事2'
 postDate: '2020-03-16T05:35:07.322Z'
 updateDate: '2020-03-16T05:35:07.322Z'
+excerpt: 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test '
 ---
 
 ## 見出し

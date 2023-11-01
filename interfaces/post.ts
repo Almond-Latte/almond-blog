@@ -5,6 +5,11 @@ type PostType = {
   title: string;
   postDate: string;
   updateDate: string;
+  coverImage: string;
+  excerpt: string;
+  ogImage: {
+    url: string;
+  };
   content: string;
   tableOfContents: TableOfContent[];
 };
