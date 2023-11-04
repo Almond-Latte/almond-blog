@@ -1,11 +1,14 @@
 ---
-title: 'Ubuntu Server 22.04.03 のインストール後にやる最低設定'
+title: 'Ubuntu Server 22.04.03 のインストール後にやる最低限の設定'
+excerpt: 'ブログ公開にあたり、自宅サーバでの運用を初めてみようと思います。それに伴い、Ubuntu Server 22.04.03 の最低限の設定を行ったので、備忘録として残しておきます。定をいろいろやったので備忘録として残しておきます。'
 postDate: '2023-10-18T14:56:06+09:00'
 updateDate: '2023-10-18T14:56:06+09:00'
-coverImage: '/assets/blog/coverImage/UbuntuServerSetup2023.svg'
+coverImage: '/assets/blog/coverImage/ServerRack.jpg'
 ogImage:
   url: '/assets/blog/coverImage/UbuntuServerSetup2023.svg'
 ---
+
+ブログ公開にあたり、自宅サーバでの運用を初めてみようと思います。それに伴い、Ubuntu Server 22.04.03 の最低限の設定を行ったので、備忘録として残しておきます。
 
 # 環境
 

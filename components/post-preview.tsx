@@ -24,48 +24,43 @@ const PostPreview = ({
   slug,
 }: Props) => {
   return (
-    <div className='max-w-md mx-auto'>
-      <div className='bg-white shadow-md border border-gray-200 rounded-lg max-w-sm mb-5'>
-        <a href={`/posts/${slug}`}>
-          <Image
-            src={coverImage}
-            alt=''
-            width={1920}
-            height={1080}
-            layout='responsive'
-            className='rounded-lg'
-          />
-        </a>
+    <div className='py-5'>
+      <div className='relative flex max-w-md flex-col rounded-lg bg-white bg-clip-border text-zinc-700 shadow-md'>
+        <div className='relative h-48 m-0 overflow-hidden shrink-0 rounded-t-lg bg-clip-border'>
+          <a href={`/posts/${slug}`}>
+            <Image src={coverImage} alt='' layout='fill' objectFit='cover' />
+          </a>
+        </div>
         <div className='p-5'>
           <a href={`/posts/${slug}`}>
-            <h5 className='text-zinc-700 font-bold text-2xl tracking-tight mb-2 line-clamp-2'>
-              {title}
-            </h5>
+            <h5 className='font-bold text-2xl traking-tight mb-2 line-clamp-2'>{title}</h5>
           </a>
-          <p className='font-normal text-gray-700 mb-3 line-clamp-3'>{excerpt}</p>
-          <div className='text-lg  mb-4 text-center'>
+          <p className='font-normal mb-3 line-clamp-3'>{excerpt}</p>
+          <div className='text-center mb-4'>
             <PostDate postDate={postDate} updateDate={updateDate} />
           </div>
-          <a
-            className='flex gap-2 px-6 w-40 py-3 text-xs font-bold text-amber-600 transition-all rounded-lg hover:bg-amber-500/10'
-            href={`/posts/${slug}`}
-          >
-            READ MORE
-            <svg
-              className='w-3.5 h-3.5 ml-2'
-              aria-hidden='true'
-              xmlns='http://www.w3.org/2000/svg'
-              fill='none'
-              viewBox='0 0 14 10'
+          <a className='inline-block' href={`/posts/${slug}`}>
+            <button
+              className='flex items-center gap-2 px-6 py-3 text-xs font-bold text-center text-amber-600 align-middle transition-all rounded-lg hover:bg-amber-500/10'
+              type='button'
             >
-              <path
-                stroke='currentColor'
-                stroke-linecap='round'
-                stroke-linejoin='round'
+              READ MORE
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
                 stroke-width='2'
-                d='M1 5h12m0 0L9 1m4 4L9 9'
-              />
-            </svg>
+                stroke='currentColor'
+                aria-hidden='true'
+                className='w-4 h-4'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  d='M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3'
+                ></path>
+              </svg>
+            </button>
           </a>
         </div>
       </div>
