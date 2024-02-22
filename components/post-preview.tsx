@@ -1,23 +1,68 @@
 import PostDate from './post-date';
 import Link from 'next/link';
+import Image from 'next/image';
+import imagess from '../public/assets/blog/coverImage/UbuntuServerSetup2023.svg';
+import dynamic from 'next/dynamic';
+import Container from './container';
+import { sl } from 'date-fns/locale';
 
 type Props = {
   title: string;
   postDate: string;
   updateDate: string;
+  coverImage: string;
+  excerpt: string;
   slug: string;
 };
 
-const PostPreview = ({ title, postDate, updateDate, slug }: Props) => {
+const PostPreview = ({
+  title,
+  postDate,
+  updateDate,
+  coverImage = '/assets/blog/coverImage/noImage.svg',
+  excerpt,
+  slug,
+}: Props) => {
   return (
-    <div>
-      <h3 className='text-3xl mb-3 leading-snug'>
-        <Link as={`/posts/${slug}`} href='/posts/[slug]' className='hover:underline'>
-          {title}
-        </Link>
-      </h3>
-      <div className='text-lg mb-4'>
-        <PostDate postDate={postDate} updateDate={updateDate} />
+    <div className='py-5'>
+      <div className='relative flex max-w-md flex-col rounded-lg bg-white bg-clip-border text-zinc-700 shadow-md'>
+        <div className='relative h-48 m-0 overflow-hidden shrink-0 rounded-t-lg bg-clip-border'>
+          <a href={`/posts/${slug}`}>
+            <Image src={coverImage} alt='' layout='fill' objectFit='cover' />
+          </a>
+        </div>
+        <div className='p-5'>
+          <a href={`/posts/${slug}`}>
+            <h5 className='font-bold text-2xl traking-tight mb-2 line-clamp-2'>{title}</h5>
+          </a>
+          <p className='font-normal mb-3 line-clamp-3'>{excerpt}</p>
+          <div className='text-center mb-4'>
+            <PostDate postDate={postDate} updateDate={updateDate} />
+          </div>
+          <a className='inline-block' href={`/posts/${slug}`}>
+            <button
+              className='flex items-center gap-2 px-6 py-3 text-xs font-bold text-center text-amber-600 align-middle transition-all rounded-lg hover:bg-amber-500/10'
+              type='button'
+            >
+              READ MORE
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke-width='2'
+                stroke='currentColor'
+                aria-hidden='true'
+                className='w-4 h-4'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  d='M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3'
+                ></path>
+              </svg>
+            </button>
+          </a>
+        </div>
       </div>
     </div>
   );

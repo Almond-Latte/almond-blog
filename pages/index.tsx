@@ -6,6 +6,7 @@ import Layout from '../components/layout';
 import { getAllPosts } from '../lib/api';
 import Head from 'next/head';
 import Post from '../interfaces/post';
+import { he } from 'date-fns/locale';
 
 type Props = {
   allPosts: Post[];
@@ -16,7 +17,7 @@ export default function Index({ allPosts }: Props) {
   const morePosts = allPosts.slice(1);
   return (
     <>
-      <div className='bg-amber-50 m-0'>
+      <div className='bg-amber-50'>
         <Layout>
           <Head>
             <title>Almond Latte&apos;s Blog</title>
@@ -30,6 +31,8 @@ export default function Index({ allPosts }: Props) {
                 title={heroPost.title}
                 postDate={heroPost.postDate}
                 updateDate={heroPost.updateDate}
+                coverImage={heroPost.coverImage}
+                excerpt={heroPost.excerpt}
                 slug={heroPost.slug}
               />
             )}
