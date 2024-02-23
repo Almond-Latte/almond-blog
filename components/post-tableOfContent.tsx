@@ -8,7 +8,7 @@ const PostTableOfContent = ({ tableOfContents }: Props) => {
   return (
     <div className='hidden lg:block w-80 ml-6'>
       <div className='flex flex-col sticky top-6'>
-        <div className='p-4 shadow-md rounded-xl mb-6 bg-white'>
+        <div className='p-4 mb-6 bg-white'>
           <p className='text-lg font-bold'>目次</p>
           <ul>
             {tableOfContents.map((TOC: TableOfContent) => {

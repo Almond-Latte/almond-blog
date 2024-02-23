@@ -77,35 +77,33 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
           <Header />
         </Container>
       </div>
-      <div className='bg-amber-50'>
-        <Container>
-          {router.isFallback ? (
-            <PostTitle>Loading…</PostTitle>
-          ) : (
-            <>
-              <PostHeader
-                title={post.title}
-                postDate={post.postDate}
-                updateDate={post.updateDate}
-              />
-              <article>
-                <Head>
-                  <title>{title}</title>
-                  <meta name='description' content='blog' />
-                </Head>
-                <div className='max-w-screen-xl mx-auto py-6' id='article'>
-                  <div className='lg:flex'>
-                    <div className='p-4 md:shadow-md md:rounded-xl mb-20 bg-white znc'>
-                      <PostBody content={post.content} />
-                    </div>
-                    <PostTableOfContent tableOfContents={post.tableOfContents} />
+      <Container>
+        {router.isFallback ? (
+          <PostTitle>Loading…</PostTitle>
+        ) : (
+          <>
+            <PostHeader
+              title={post.title}
+              postDate={post.postDate}
+              updateDate={post.updateDate}
+            />
+            <article>
+              <Head>
+                <title>{title}</title>
+                <meta name='description' content='blog' />
+              </Head>
+              <div className='max-w-screen-xl mx-auto py-6' id='article'>
+                <div className='lg:flex'>
+                  <div className='p-4 mb-20 bg-white znc'>
+                    <PostBody content={post.content} />
                   </div>
+                  <PostTableOfContent tableOfContents={post.tableOfContents} />
                 </div>
-              </article>
-            </>
-          )}
-        </Container>
-      </div>
+              </div>
+            </article>
+          </>
+        )}
+      </Container>
     </Layout>
   );
 }

@@ -17,29 +17,27 @@ export default function Index({ allPosts }: Props) {
   const morePosts = allPosts.slice(1);
   return (
     <>
-      <div className='bg-amber-50'>
-        <Layout>
-          <Head>
-            <title>Almond Latte&apos;s Blog</title>
-          </Head>
-          <Container>
-            <Intro />
-          </Container>
-          <Container>
-            {heroPost && (
-              <HeroPost
-                title={heroPost.title}
-                postDate={heroPost.postDate}
-                updateDate={heroPost.updateDate}
-                coverImage={heroPost.coverImage}
-                excerpt={heroPost.excerpt}
-                slug={heroPost.slug}
-              />
-            )}
-            {morePosts.length > 0 && <MoreStories posts={morePosts} />}
-          </Container>
-        </Layout>
-      </div>
+      <Layout>
+        <Head>
+          <title>Almond Latte&apos;s Blog</title>
+        </Head>
+        <Container>
+          <Intro />
+        </Container>
+        <Container>
+          {heroPost && (
+            <HeroPost
+              title={heroPost.title}
+              postDate={heroPost.postDate}
+              updateDate={heroPost.updateDate}
+              coverImage={heroPost.coverImage}
+              excerpt={heroPost.excerpt}
+              slug={heroPost.slug}
+            />
+          )}
+          {morePosts.length > 0 && <MoreStories posts={morePosts} />}
+        </Container>
+      </Layout>
     </>
   );
 }
