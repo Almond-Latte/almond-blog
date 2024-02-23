@@ -93,7 +93,7 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
                 <meta name='description' content='blog' />
               </Head>
               <div className='max-w-screen-xl mx-auto py-6' id='article'>
-                <div className='lg:flex'>
+                <div className='lg:flex justify-center'>
                   <div className='p-4 mb-20 bg-white znc'>
                     <PostBody content={post.content} />
                   </div>
