@@ -3,6 +3,8 @@ title: 'Zenn独自のMarkdown記法が使えるかのテスト記事'
 postDate: '2023-10-18T14:56:06+09:00'
 updateDate: '2023-10-18T14:56:06+09:00'
 excerpt: 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test '
+tags: ['forDebug', ]
+
 ---
 
 ## 見出し
