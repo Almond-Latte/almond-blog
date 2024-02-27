@@ -24,14 +24,9 @@ export default function TaggedPost({ allPosts }: Props) {
      
   return (
     <Layout>
-      <div className='border-b'>
-        <Container>
-          <Header />
-        </Container>
-      </div>
       <Container>
-      <h2 className='m-8 text-3xl font-bold text-gray-800 text-center'>Posts tagged with <a className='text-amber-600'># {tag.name}</a></h2>
-      <div className='grid grid-cols-1 md:grid-cols-2 md:gap-x-5 xl:grid-cols-3 2xl:grid-cols-4 mb-32'>
+      <h2 className='m-24 text-3xl font-bold text-gray-800 text-center'>Posts tagged with <a className='text-amber-600'># {tag.name}</a></h2>
+      <div className="divide-y divide-gray-200">
         {taggedPosts.map((post) => (
           <PostPreview
             key={post.slug}
@@ -43,7 +38,7 @@ export default function TaggedPost({ allPosts }: Props) {
             slug={post.slug}
           />
         ))}
-      </div>
+        </div>
       </Container>
     </Layout>
   );

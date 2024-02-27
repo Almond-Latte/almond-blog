@@ -92,11 +92,6 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
 
   return (
     <Layout preview={preview}>
-      <div className='border-b'>
-        <Container>
-          <Header />
-        </Container>
-      </div>
       <Container>
         {router.isFallback ? (
           <PostTitle>Loading…</PostTitle>
