@@ -1,4 +1,5 @@
 import type TableOfContent from './tableOfContent';
+import type { Tag } from 'lib/tag';
 
 type PostType = {
   slug: string;
@@ -12,6 +13,7 @@ type PostType = {
   };
   content: string;
   tableOfContents: TableOfContent[];
+  tags: string[];
 };
 
 export default PostType;

@@ -16,6 +16,9 @@ import { JSDOM } from 'jsdom';
 import type {} from 'typed-query-selector';
 import tocStyles from '../../styles/tableOfContent-styles.module.css';
 import { Alexandria } from 'next/font/google';
+import { Tags, Tag, tagIconStyle } from 'lib/tag';
+import Link from 'next/link';
+import SectionSeparator from 'components/section-separator';
 
 type Props = {
   post: PostType;
@@ -70,6 +73,23 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
       }
     });
   }
+
+  // ----------- タグを表示する ---------------
+  const TagIcon = (tag: Tag, index: number) => (
+    <div style={tagIconStyle.box} key={index}>
+      <Link href={`/tags/${tag.path}`}>
+        <button style={tagIconStyle.btn}>
+          #{tag.name}
+        </button>
+      </Link>
+    </div>
+  );
+
+  // ------- タグ解析 ---------
+  const postTags = Tags.filter((tag: Tag) => (
+    post.tags ? post.tags.includes(tag.name) : false
+  ));
+
   return (
     <Layout preview={preview}>
       <div className='border-b'>
@@ -92,9 +112,10 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
                 <title>{title}</title>
                 <meta name='description' content='blog' />
               </Head>
-              <div className='max-w-screen-xl mx-auto py-6' id='article'>
+              <div className='max-w-screen-xl mx-auto' id='article'>
                 <div className='lg:flex justify-center'>
                   <div className='p-4 mb-20 bg-white znc'>
+                    {postTags.map((pt) => (TagIcon(pt, 1)))}
                     <PostBody content={post.content} />
                   </div>
                   <PostTableOfContent tableOfContents={post.tableOfContents} />
@@ -124,6 +145,7 @@ export async function getStaticProps({ params }: Params) {
     'content',
     'ogImage',
     'coverImage',
+    'tags',
   ]);
   const content = markdownToHtml(post.content || '');
 
@@ -154,7 +176,7 @@ export async function getStaticProps({ params }: Params) {
 
 export async function getStaticPaths() {
   const posts = getAllPosts(['slug']);
-
+  
   return {
     paths: posts.map((post) => {
       return {
