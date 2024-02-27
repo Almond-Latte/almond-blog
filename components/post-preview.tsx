@@ -26,11 +26,6 @@ const PostPreview = ({
   return (
     <div className='py-5'>
       <div className='relative flex max-w-md flex-col rounded-lg bg-white bg-clip-border text-zinc-700 shadow-md'>
-        <div className='relative h-48 m-0 overflow-hidden shrink-0 rounded-t-lg bg-clip-border'>
-          <a href={`/posts/${slug}`}>
-            <Image src={coverImage} alt='' layout='fill' objectFit='cover' />
-          </a>
-        </div>
         <div className='p-5'>
           <a href={`/posts/${slug}`}>
             <h5 className='font-bold text-2xl traking-tight mb-2 line-clamp-2'>{title}</h5>

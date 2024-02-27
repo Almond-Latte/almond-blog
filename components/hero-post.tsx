@@ -15,10 +15,7 @@ type Props = {
 const HeroPost = ({ title, excerpt, postDate, updateDate, coverImage, slug }: Props) => {
   return (
     <section className='p-5'>
-      <div className='relative flex w-full max-w-screen flex-row rounded-xl bg-white bg-clip-border text-zinc-700 shadow-md'>
-        <div className='relative w-2/5 m-0 overflow-hidden bg-white shrink-0 rounded-l-xl bg-clip-border'>
-          <Image src={coverImage} alt='' layout='fill' objectFit='cover' />
-        </div>
+      <div className='w-full max-w-screen flex-row rounded-xl bg-white bg-clip-border text-zinc-700 shadow-md'>
         <div className='p-6'>
           <h6 className='mb-4 text-base antialiased font-semibold text-amber-600'>NEW POST</h6>
           <a href={`/posts/${slug}`}>
