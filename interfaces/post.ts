@@ -1,4 +1,3 @@
-import type TableOfContent from './tableOfContent';
 import type { Tag } from 'lib/tag';
 
 type PostType = {
@@ -12,7 +11,6 @@ type PostType = {
     url: string;
   };
   content: string;
-  tableOfContents: TableOfContent[];
   tags: string[];
 };
 
