@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* tocbot で生成された目次のスタイル */
+.toc {
+    position: sticky;
+    margin-top: 50px;
+    top: 30px;
+    font-size:0.9rem;
+}
+
+.toc .toc-link {
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  display: inline-block;
+  width: 100%;
+  color: #777;
+}
+.toc .node-name--H1 {
+  font-weight: 700;
+}
+.toc .node-name--H2 {
+  font-weight: 400;
+}
+.toc .node-name--H2::before {
+  content: ' - ';
+}
+
+.toc a.is-active-link {
+  color: rgb(186, 140, 2);
+  background-color: #eee;
+  font-weight: 700;
+}
