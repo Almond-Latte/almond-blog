@@ -23,6 +23,7 @@
     "remark": "^14.0.2",
     "remark-html": "^15.0.1",
     "sharp": "^0.32.6",
+    "tocbot": "^4.25.0",
     "typescript": "*",
     "zenn-content-css": "^0.1.131",
     "zenn-embed-elements": "^0.1.131",
