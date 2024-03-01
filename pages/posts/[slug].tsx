@@ -2,22 +2,17 @@ import { useRouter } from 'next/router';
 import ErrorPage from 'next/error';
 import Container from '../../components/container';
 import PostBody from '../../components/post-body';
-import Header from '../../components/header';
 import PostHeader from '../../components/post-header';
 import Layout from '../../components/layout';
 import { getPostBySlug, getAllPosts } from '../../lib/api';
 import PostTitle from '../../components/post-title';
 import PostTOC from "components/post-toc"
 import Head from 'next/head';
-import markdownToHtml from 'zenn-markdown-html';
+import { markdownToHtml } from 'lib/markdown-to-html';
 import type PostType from '../../interfaces/post';
-import { JSDOM } from 'jsdom';
 import type {} from 'typed-query-selector';
-import tocStyles from '../../styles/tableOfContent-styles.module.css';
-import { Alexandria } from 'next/font/google';
 import { Tags, Tag, tagIconStyle } from 'lib/tag';
 import Link from 'next/link';
-import SectionSeparator from 'components/section-separator';
 
 type Props = {
   post: PostType;
@@ -102,7 +97,8 @@ export async function getStaticProps({ params }: Params) {
     'coverImage',
     'tags',
   ]);
-  const content = markdownToHtml(post.content || '');
+
+  const content = await markdownToHtml(post.content);
 
   return {
     props: {
