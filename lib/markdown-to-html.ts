@@ -6,8 +6,6 @@ import rehypeSlug from 'rehype-slug';
 import rehypeStringify from 'rehype-stringify'
 import rehypeCodeTitles from 'rehype-code-titles';
 import rehypePrism from 'rehype-prism-plus';
-import rehypePrismDiff from 'rehype-prism-diff';
-import rehypePrismAll from 'rehype-prism-plus/all';
 
 export const markdownToHtml = async (markdownContent: string): Promise<string> => {
   const result = unified()
