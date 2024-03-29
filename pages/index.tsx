@@ -13,6 +13,9 @@ type Props = {
 };
 
 export default function Index({ allPosts }: Props) {
+  allPosts.forEach(post => {
+    
+  });
   const heroPost = allPosts[0];
   const morePosts = allPosts.slice(1);
   return (
@@ -29,7 +32,7 @@ export default function Index({ allPosts }: Props) {
             <HeroPost
               title={heroPost.title}
               postDate={heroPost.postDate}
-              updateDate={heroPost.updateDate}
+              lastmod={heroPost.lastmod}
               coverImage={heroPost.coverImage}
               excerpt={heroPost.excerpt}
               slug={heroPost.slug}
@@ -46,7 +49,7 @@ export const getStaticProps = async () => {
   const allPosts = getAllPosts([
     'title',
     'postDate',
-    'updateDate',
+    'lastmod',
     'slug',
     'author',
     'coverImage',

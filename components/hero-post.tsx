@@ -7,12 +7,12 @@ type Props = {
   title: string;
   excerpt: string;
   postDate: string;
-  updateDate: string;
+  lastmod: string;
   coverImage: string;
   slug: string;
 };
 
-const HeroPost = ({ title, excerpt, postDate, updateDate, coverImage, slug }: Props) => {
+const HeroPost = ({ title, excerpt, postDate, lastmod, coverImage, slug }: Props) => {
   return (
     <section className='p-5'>
       <div className='w-full max-w-screen flex-row rounded-xl bg-white bg-clip-border text-zinc-700 shadow-md'>
@@ -26,6 +26,9 @@ const HeroPost = ({ title, excerpt, postDate, updateDate, coverImage, slug }: Pr
           <p className='block mb-8 font-sans text-base antialiased font-normal leading-relaxed text-gray-700'>
             {excerpt}
           </p>
+          <div className='text-center mb-4'>
+            <PostDate postDate={postDate} lastmod={lastmod} />
+          </div>
           <div className='flex justify-end'>
             <a className='inline-block' href={`/posts/${slug}`}>
               <button

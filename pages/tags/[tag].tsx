@@ -1,15 +1,11 @@
-import { GetStaticPaths } from "next";
 import { Tags, Tag } from "lib/tag";
 import Container from 'components/container';
 import Layout from 'components/layout';
 import { getAllPosts } from 'lib/api';
-import Head from 'next/head';
 import Post from 'interfaces/post';
 import { usePathname } from "next/navigation";
 import ErrorPage from "next/error";
-import SectionSeparator from "components/section-separator";
 import PostPreview from "components/post-preview";
-import Header from "components/header";
 
 type Props = {
   allPosts: Post[];
@@ -21,7 +17,7 @@ export default function TaggedPost({ allPosts }: Props) {
     return <ErrorPage statusCode={404} />;
   }
   const taggedPosts = [...allPosts.filter((post) => post.tags.includes(tag.name))]
-     
+
   return (
     <Layout>
       <Container>
@@ -32,7 +28,7 @@ export default function TaggedPost({ allPosts }: Props) {
             key={post.slug}
             title={post.title}
             postDate={post.postDate}
-            updateDate={post.updateDate}
+            lastmod={post.lastmod}
             coverImage={post.coverImage}
             excerpt={post.excerpt}
             slug={post.slug}
@@ -54,7 +50,7 @@ export async function getStaticProps( { params }: Params) {
   const allPosts = getAllPosts([
     'title',
     'postDate',
-    'updateDate',
+    'lastmod',
     'slug',
     'author',
     'coverImage',

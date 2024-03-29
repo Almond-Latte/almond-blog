@@ -32,10 +32,7 @@
     "sharp": "^0.32.6",
     "tocbot": "^4.25.0",
     "typescript": "*",
-    "unified": "^11.0.4",
-    "zenn-content-css": "^0.1.131",
-    "zenn-embed-elements": "^0.1.131",
-    "zenn-markdown-html": "^0.1.131"
+    "unified": "^11.0.4"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.5.6",
