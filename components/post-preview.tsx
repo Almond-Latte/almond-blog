@@ -9,7 +9,7 @@ import { sl } from 'date-fns/locale';
 type Props = {
   title: string;
   postDate: string;
-  updateDate: string;
+  lastmod: string;
   coverImage: string;
   excerpt: string;
   slug: string;
@@ -18,7 +18,7 @@ type Props = {
 const PostPreview = ({
   title,
   postDate,
-  updateDate,
+  lastmod,
   coverImage = '/assets/blog/coverImage/noImage.svg',
   excerpt,
   slug,
@@ -32,7 +32,7 @@ const PostPreview = ({
           </a>
           <p className='font-normal mb-3 line-clamp-3'>{excerpt}</p>
           <div className='text-center mb-4'>
-            <PostDate postDate={postDate} updateDate={updateDate} />
+            <PostDate postDate={postDate} lastmod={lastmod} />
           </div>
           <div className='flex justify-end'>
             <a className='inline-block' href={`/posts/${slug}`}>
