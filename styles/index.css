@@ -34,3 +34,12 @@
   background-color: #eee;
   font-weight: 700;
 }
+
+/* override github-markdown-css */
+p {
+  line-height: 1.6rem;
+}
+
+ul {
+  list-style-type: disc;
+}
