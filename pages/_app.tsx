@@ -1,7 +1,8 @@
 import { AppProps } from 'next/app';
 import '../styles/index.css';
 import '../styles/prism.css';
-import 'zenn-content-css';
+// import 'zenn-content-css';
+import '../styles/github-markdown.css';
 import React, { useEffect } from 'react';
 import { Inter, Source_Code_Pro } from 'next/font/google';
 
