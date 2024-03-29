@@ -3,8 +3,10 @@ export type Tag = { path: string, name: string }
 export const Tags: Tag[] = [
     { path: 'kali', name: 'Kali Linux'},
     { path: 'linux', name: 'Linux' },
+    { path: 'python', name: 'Python' },
     { path: 'ubuntu', name: 'Ubuntu' },
     { path: 'vbox', name: 'VirtualBox'},
+    { path: 'virustotal', name: 'VirusTotal'},
     { path: 'forDebug', name: 'forDebug'},
 ]
 
