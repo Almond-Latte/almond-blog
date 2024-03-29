@@ -62,7 +62,7 @@ export default function Post({ post, /*morePosts,*/ preview }: Props) {
               </Head>
               <div className='max-w-screen-xl mx-auto' id='article'>
                 <div className='lg:flex justify-center'>
-                  <div className='p-4 mb-20 znc'>
+                  <div className='p-8 mb-20 markdown-body'>
                     {postTags.map((pt) => (TagIcon(pt, 1)))}
                     <PostBody content={post.content} />
                   </div>

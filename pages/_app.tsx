@@ -1,8 +1,7 @@
 import { AppProps } from 'next/app';
-import '../styles/index.css';
+import 'github-markdown-css';
 import '../styles/prism.css';
-import 'zenn-content-css';
-import React, { useEffect } from 'react';
+import '../styles/index.css';
 import { Inter, Source_Code_Pro } from 'next/font/google';
 
 const inter = Inter({
@@ -18,9 +17,6 @@ const code = Source_Code_Pro({
 });
 
 const MyApp = ({ Component, pageProps }: AppProps): JSX.Element => {
-  useEffect(() => {
-    import('zenn-embed-elements'); // 数式をブラウザでレンダリングできるように
-  }, []);
   return (
     <main className={`${inter.className} ${code.variable}`}>
       <Component {...pageProps} />
