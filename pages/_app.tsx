@@ -1,5 +1,5 @@
 import { AppProps } from 'next/app';
-import 'github-markdown-css/github-markdown-light.cs';
+import 'github-markdown-css/github-markdown-light.css';
 import '../styles/prism.css';
 import '../styles/index.css';
 import { Inter, Source_Code_Pro } from 'next/font/google';
