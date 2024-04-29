@@ -10,7 +10,7 @@ type Props = {
 const PostDate = ({ postDate, lastmod }: Props) => {
   return (
     <div className='text-zinc-600 text-sm flex'>
-      最終更新&thinsp;
+      更新&thinsp;
       <FontAwesomeIcon icon={faRotateRight} className='w-4' />
       &nbsp;
       <DateFormatter dateString={lastmod} />
