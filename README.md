@@ -43,9 +43,27 @@ export const markdownToHtml = async (markdownContent: string): Promise<string> =
   return result;
 };
 ```
+以下に例を示します。
+
+![image](https://github.com/Almond-Latte/almond-blog/assets/147462539/baf127ec-ed45-4b8e-bcd0-de8c0b41aa52)
+
+![image](https://github.com/Almond-Latte/almond-blog/assets/147462539/91ae921d-8a32-4a87-8cf8-b8da6b2d984e)
+
+## 自動追尾目次
+[tocbot](https://tscanlin.github.io/tocbot/) を用いて自動追尾目次（上図参照）を実装しています。
 
 ## Syntax Highglighting
 上記のMarddownパーサーでは、HTMLに変換した後にHTML解析を行って[Prism.js](https://prismjs.com/)によるシンタックスハイライティングを行っています。
+
+Prism.jsだけで対応できない行ハイライトやdiffのデザインは独自に実装しています。
+
+![image](https://github.com/Almond-Latte/almond-blog/assets/147462539/8e97cf9c-3a06-4a4c-ba46-ed292f9e23a0)
+
+![image](https://github.com/Almond-Latte/almond-blog/assets/147462539/92b0f806-a7c3-408a-ae6b-0bfdf3e51a92)
+
+![image](https://github.com/Almond-Latte/almond-blog/assets/147462539/13a376f1-9e6c-4d0b-9910-c5858e4fc539)
+
+
 
 ## SSRによるサイトマップ生成
 SSR(Server Side Rendering)によりリアルタイムで動的なサイトマップ生成を行います。
