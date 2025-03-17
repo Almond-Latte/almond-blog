@@ -2,22 +2,25 @@ import Container from '../components/container';
 import MoreStories from '../components/more-stories';
 import HeroPost from '../components/hero-post';
 import Intro from '../components/intro';
-import Layout from '../components/layout';
+import Layout from '../components/SectionLayout';
 import { getAllPosts } from '../lib/api';
 import Head from 'next/head';
-import Post from '../interfaces/post';
-import { he } from 'date-fns/locale';
+import Post from '../types/post';
 
-type Props = {
-  allPosts: Post[];
-};
+export default async function Page() {
+  const allPosts: Post[] = await getAllPosts([
+    "title",
+    "postDate",
+    "lastmod",
+    "slug",
+    "author",
+    "coverImage",
+    "excerpt",
+  ]);
 
-export default function Index({ allPosts }: Props) {
-  allPosts.forEach(post => {
-    
-  });
   const heroPost = allPosts[0];
   const morePosts = allPosts.slice(1);
+
   return (
     <>
       <Layout>
@@ -44,19 +47,3 @@ export default function Index({ allPosts }: Props) {
     </>
   );
 }
-
-export const getStaticProps = async () => {
-  const allPosts = getAllPosts([
-    'title',
-    'postDate',
-    'lastmod',
-    'slug',
-    'author',
-    'coverImage',
-    'excerpt',
-  ]);
-
-  return {
-    props: { allPosts },
-  };
-};

@@ -1,8 +1,8 @@
 import { Tags, Tag } from "lib/tag";
 import Container from 'components/container';
-import Layout from 'components/layout';
+import Layout from 'components/SectionLayout';
 import { getAllPosts } from 'lib/api';
-import Post from 'interfaces/post';
+import Post from 'types/post';
 import { usePathname } from "next/navigation";
 import ErrorPage from "next/error";
 import PostPreview from "components/post-preview";

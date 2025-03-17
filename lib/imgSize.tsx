@@ -13,8 +13,8 @@ interface ImgElement extends Element {
   };
 }
 
-function rehypeImageSize(): (tree: Node<Data>) => void {
-  return (tree: Node<Data>) => {
+function rehypeImageSize(): (tree: Node) => void {
+  return (tree: Node) => {
     visit(tree, 'element', (node: ImgElement) => {
       if (node.tagName === 'img') {
         const src = node.properties.src;

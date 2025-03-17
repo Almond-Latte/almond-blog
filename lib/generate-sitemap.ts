@@ -8,7 +8,7 @@ const generateSitemapXml = async () => {
     },
   ];
 
-  const posts = getAllPosts(['slug', 'lastmod']);
+  const posts = await getAllPosts(['slug', 'lastmod']);
   const postFields = posts.map((post) => {
     return {
       path: `/posts/${post.slug}`,

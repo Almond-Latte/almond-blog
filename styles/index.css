@@ -4,7 +4,7 @@
 
 /* tocbot で生成された目次のスタイル */
 .toc {
-    position: sticky;
+    position: sticky; 
     margin-top: 50px;
     top: 30px;
     font-size:0.9rem;
@@ -42,4 +42,7 @@ p {
 
 ul {
   list-style-type: disc;
+}
+.markdown-alert-title {
+  margin-bottom: 0.5rem;
 }

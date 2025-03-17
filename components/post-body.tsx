@@ -4,7 +4,7 @@ type Props = {
 
 const PostBody = ({ content }: Props) => {
   return (
-    <div className='content max-w-2xl mx-auto'>
+    <div className='content mx-auto markdown-body'>
       <div dangerouslySetInnerHTML={{ __html: content }} />
     </div>
   );

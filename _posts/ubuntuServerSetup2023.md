@@ -1,8 +1,8 @@
 ---
 title: 'Ubuntu Server 22.04.03 のインストール後にやる最低限の設定'
-excerpt: 'ブログ公開にあたり、自宅サーバでの運用を初めてみようと思います。それに伴い、Ubuntu Server 22.04.03 の最低限の設定を行ったので、備忘録として残しておきます。定をいろいろやったので備忘録として残しておきます。'
+excerpt: 'ブログ公開にあたり、自宅サーバでの運用を初めてみようと思います。それに伴い、Ubuntu Server 22.04.03 の最低限の設定をいろいろやったので備忘録として残しておきます。'
 postDate: '2023-10-18T14:56:06+09:00'
-updateDate: '2023-10-18T14:56:06+09:00'
+lastmod: '2023-10-18T14:56:06+09:00'
 coverImage: '/assets/blog/coverImage/ServerRack.jpg'
 ogImage:
   url: '/assets/blog/coverImage/UbuntuServerSetup2023.svg'
@@ -31,7 +31,7 @@ sudo adduser ${USERNAME}
 
 パスワードだけ設定し、他の項
 
-```
+```bash
 Full Name []:
 Room Number []:
 Work Phone []:
@@ -99,7 +99,7 @@ ip a
 
 によりインターフェースを確認する。
 
-```
+```bash
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
@@ -128,8 +128,7 @@ sudo netplan apply
 
 で設定を適用する。
 
-:::details Warning関連
-
+### Warning関連
 僕の環境では以下のWarningが出たのでメモしておく。
 
 **設定ファイルの権限**
@@ -154,15 +153,12 @@ WARNING:root:Cannot call Open vSwitch: ovsdb-server.service is not running.
 
 [参考](https://bugs.launchpad.net/ubuntu/+source/netplan.io/+bug/1995598)
 
-:::
-
 `ip a`, `ip route`で適用されているか確認。名前解決できるかは以下で確認できる。
 
 ```bash
 curl google.com
 ```
-
-:::details ネットワーク待ちで起動が遅い
+### ネットワーク待ちで起動が遅い
 
 起動時にネットワーク構成待ちになり、大体2分かかる。
 
@@ -174,7 +170,6 @@ A start job is running for wait for network to be configured.
 
 [参考](https://askubuntu.com/questions/1118283/50-cloud-init-yaml-optional-true-will-the-network-interface-get-initialized)
 
-:::
 
 # SSH設定
 
@@ -193,7 +188,7 @@ sudo ufw allow 22/tcp
 sudo ufw reload
 ```
 
-```
+```bash
 $ sudo ufw status
 Status: active
 
@@ -390,7 +385,7 @@ sudo apt install -y build-essential
 
 # タイムゾーンの変更
 
-```
+```bash
 $ timedatectl status
                Local time: Wed 2023-10-18 05:52:40 UTC
            Universal time: Wed 2023-10-18 05:52:40 UTC
@@ -403,7 +398,7 @@ System clock synchronized: yes
 
 タイムゾーンが`UTC`(協定世界時)になっているので、`JST`(日本標準時)に変更する。
 
-```
+```bash
 $ sudo timedatectl set-timezone Asia/Tokyo
 $ timedatectl status
                Local time: Wed 2023-10-18 14:54:45 JST
@@ -417,7 +412,7 @@ System clock synchronized: yes
 
 `date`コマンドで`ISO8061 format`の日付が取得できるようになった。
 
-```
+```bash
 $ date +"%Y-%m-%dT%H:%M:%S%:z"
 2023-10-18T14:56:06+09:00
 ```
@@ -428,7 +423,7 @@ $ date +"%Y-%m-%dT%H:%M:%S%:z"
 
 以下のように`~/.vimrc`を記述する。
 
-```:vimrc
+```vim:~/.vimrc
 "====== 表示設定 ======
 syntax on "シンタックスを有効に
 set number "行番号
