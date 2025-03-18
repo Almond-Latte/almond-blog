@@ -7,6 +7,7 @@ export const Tags: Tag[] = [
     { path: 'ubuntu', name: 'Ubuntu' },
     { path: 'vbox', name: 'VirtualBox'},
     { path: 'virustotal', name: 'VirusTotal'},
+    { path: 'security', name: 'Security'},
     { path: 'forDebug', name: 'forDebug'},
 ]
 

@@ -3,6 +3,7 @@ import 'github-markdown-css/github-markdown-light.css';
 import '../styles/prism.css';
 import '../styles/index.css';
 import { Metadata } from 'next';
+import 'katex/dist/katex.min.css';
 
 export const metadata: Metadata = {
   title: 'Almond Latte&apos;s Blog',
