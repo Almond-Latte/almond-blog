@@ -1,0 +1,19 @@
+# docker-compose.dev.yml
+services:
+  nextjs:
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    volumes:
+      - ./:/app   # ローカルのソースコードをコンテナにマウント
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+
+  nginx:
+    volumes:
+      # 本番用の設定ファイルではなく、開発用設定ファイルをマウント
+      - ./nginx/default.dev.conf:/etc/nginx/conf.d/default.conf:ro
+      # 自己署名証明書のディレクトリをマウント（読み取り専用）
+      - ./nginx/certs:/etc/nginx/certs:ro
+

@@ -1,0 +1,6 @@
+# docker-compose.prod.yml
+services:
+  nextjs:
+    environment:
+      - NODE_ENV=production
+

@@ -1,0 +1,39 @@
+# docker-compose.yml
+services:
+  nextjs:
+    build: .
+    container_name: nextjs_app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - nextjs-node-modules:/app/node_modules
+
+  nginx:
+    build: ./nginx
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/letsencrypt    # 本番用証明書（Let’s Encrypt 発行後）
+      - certbot-htdocs:/var/www/certbot
+    depends_on:
+      - nextjs
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certs:/etc/letsencrypt
+      - certbot-htdocs:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do certbot renew;
+      sleep 12h & wait $${!};
+      done;"
+
+volumes:
+  certs:
+  certbot-htdocs:
+  nextjs-node-modules:
+
