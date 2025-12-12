@@ -13,9 +13,11 @@
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
     "astro": "^5.16.5",
+    "budoux": "^0.7.0",
     "rehype-katex": "^7.0.1",
+    "remark-github-blockquote-alert": "^2.0.0",
     "remark-math": "^6.0.0",
-    "satori": "^0.12.2",
-    "sharp": "^0.34.3"
+    "satori": "^0.18.3",
+    "sharp": "^0.34.5"
   }
 }

@@ -1,3 +1,5 @@
+@import 'remark-github-blockquote-alert/alert.css';
+
 /*
   The CSS in this style tag is based off of Bear Blog's default CSS.
   https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
@@ -37,7 +39,7 @@ body {
 	text-align: left;
 	background: linear-gradient(var(--gray-gradient)) no-repeat;
 	background-size: 100% 600px;
-	word-wrap: break-word;
+	word-break: auto-phrase;
 	overflow-wrap: break-word;
 	color: rgb(var(--gray-dark));
 	font-size: 20px;
@@ -58,6 +60,8 @@ h6 {
 	margin: 0 0 0.5rem 0;
 	color: rgb(var(--black));
 	line-height: 1.2;
+	word-break: auto-phrase;
+	overflow-wrap: break-word;
 }
 h1 {
 	font-size: 3.052em;
@@ -73,6 +77,20 @@ h4 {
 }
 h5 {
 	font-size: 1.25em;
+}
+
+/* Blog post content headings */
+.prose h1 {
+	font-size: 1.8em;
+}
+.prose h2 {
+	font-size: 1.5em;
+}
+.prose h3 {
+	font-size: 1.25em;
+}
+.prose h4 {
+	font-size: 1.1em;
 }
 strong,
 b {
@@ -153,3 +171,4 @@ hr {
 	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
 	white-space: nowrap;
 }
+

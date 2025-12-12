@@ -5,11 +5,8 @@ pubDate: '2025-03-18'
 ---
 
 > [!note]
->
 > 勉強していたことをまとめたものです。一部誤りがあるかもしれません。
->
 > マルウェア文脈におけるAdversarial Attackを想定しています。
->
 > 論文: [Evasion attacks against machine learning at test time(2013)](https://link.springer.com/chapter/10.1007/978-3-642-40994-3_25)
 
 # 1. KDE（カーネル密度推定）の基礎
@@ -98,7 +95,6 @@ $$
 そのため、以降ではこの項をmimicry componentと呼ぶ。
 
 > [!important]
->
 > mimicry componentを使用した場合($\lambda \ge 0$)、勾配降下は $g(\mathbf{x})$ のみを最小化する場合($\lambda = 0$) と比較して、明らかに非最適な経路をたどることを指摘しておく。そのため、$\lambda = 0$ の時に達成される $g(\mathbf{x})$ と同じ値に到達するには、より多くの変更が必要になる可能性がある。しかし、 勾配降下法は局所最小値に陥る可能性があるためこれが重要となる。
 
 
