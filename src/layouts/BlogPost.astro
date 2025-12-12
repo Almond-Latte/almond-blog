@@ -261,6 +261,11 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 
 			document.addEventListener('scroll', updateTocHighlight);
 			document.addEventListener('DOMContentLoaded', updateTocHighlight);
+
+			// Enable checkbox clicking
+			document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+				checkbox.removeAttribute('disabled');
+			});
 		</script>
 	</body>
 </html>
