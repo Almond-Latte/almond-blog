@@ -5,6 +5,7 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import BudouX from '../components/BudouX.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const posts = (await getCollection('blog')).sort(
@@ -43,8 +44,8 @@ const posts = (await getCollection('blog')).sort(
 			ul li:first-child img {
 				width: 100%;
 			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
+			ul li:first-child :global(.title) {
+				font-size: 1rem;
 			}
 			ul li img {
 				margin-bottom: 0.5rem;
@@ -53,16 +54,18 @@ const posts = (await getCollection('blog')).sort(
 			ul li a {
 				display: block;
 			}
-			.title {
+			:global(.title) {
 				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
+				color: rgb(var(--gray));
+				font-size: 1rem;
+				font-weight: normal;
+				line-height: 1.4;
 			}
 			.date {
 				margin: 0;
 				color: rgb(var(--gray));
 			}
-			ul li a:hover h4,
+			ul li a:hover :global(.title),
 			ul li a:hover .date {
 				color: rgb(var(--accent));
 			}
@@ -81,7 +84,7 @@ const posts = (await getCollection('blog')).sort(
 					margin-bottom: 0;
 				}
 				ul li:first-child .title {
-					font-size: 1.563em;
+					font-size: 1rem;
 				}
 			}
 		</style>
@@ -96,11 +99,11 @@ const posts = (await getCollection('blog')).sort(
 							<li>
 								<a href={`/blog/${post.id}/`}>
 									{post.data.heroImage ? (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
+										<Image width={720} height={360} src={post.data.heroImage} alt={post.data.title} />
 									) : (
-										<img width={720} height={360} src={`/og/${post.id}.png`} alt="" />
+										<img width={720} height={360} src={`/og/${post.id}.png`} alt={post.data.title} />
 									)}
-									<h4 class="title">{post.data.title}</h4>
+									<BudouX text={post.data.title} tag="h4" class="title" />
 									<p class="date">
 										<FormattedDate date={post.data.pubDate} />
 									</p>
