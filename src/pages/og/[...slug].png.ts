@@ -1,10 +1,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
-import { loadDefaultJapaneseParser } from 'budoux';
 import satori from 'satori';
 import sharp from 'sharp';
-
-const parser = loadDefaultJapaneseParser();
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getCollection('blog');
@@ -39,9 +36,6 @@ export const GET: APIRoute = async ({ props }) => {
     month: 'long',
     day: 'numeric',
   });
-
-  // Use BudouX to parse the title into segments for natural line breaking
-  const titleSegments = parser.parse(title);
 
   const svg = await satori(
     {
@@ -89,16 +83,10 @@ export const GET: APIRoute = async ({ props }) => {
                           fontWeight: 700,
                           color: '#1a1a2e',
                           lineHeight: 1.4,
-                          display: 'flex',
-                          flexWrap: 'wrap',
+                          wordBreak: 'keep-all',
+                          overflowWrap: 'break-word',
                         },
-                        children: titleSegments.map((segment) => ({
-                          type: 'span',
-                          props: {
-                            style: { display: 'block' },
-                            children: segment,
-                          },
-                        })),
+                        children: title,
                       },
                     },
                   ],
