@@ -22,7 +22,7 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description} image={`/og/${Astro.url.pathname.replace('/blog/', '').replace('/', '')}.png`} />
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 		<style>
 			main {

@@ -11,7 +11,7 @@ import remarkGithubBlockquoteAlert from 'remark-github-blockquote-alert';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://example.com',
+	site: 'https://almond-latte.com',
 	integrations: [
 		expressiveCode({
 			themes: ['dracula'],
