@@ -65,6 +65,7 @@ h6 {
 	line-height: 1.2;
 	word-break: auto-phrase;
 	overflow-wrap: break-word;
+	scroll-margin-top: 3.5em;
 }
 h1 {
 	font-size: 3.052em;
