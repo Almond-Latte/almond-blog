@@ -54,7 +54,7 @@ export const GET: APIRoute = async ({ props }) => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #e67e22 0%, #c45d00 100%)',
+          background: 'linear-gradient(135deg, #f5c9a8 0%, #e8a878 100%)',
           padding: '40px',
         },
         children: {
