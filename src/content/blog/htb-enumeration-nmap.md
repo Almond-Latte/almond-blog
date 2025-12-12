@@ -84,7 +84,7 @@ nmap -sU --top-ports 100 <target>
 
 ### 基本的なポート指定
 
-```bash
+```bash showLineNumbers
 # 単一ポート
 nmap -p 80 <target>
 
@@ -105,7 +105,7 @@ nmap --top-ports 100 <target>
 
 HTBでは、まず全ポートスキャンを行い、その後詳細スキャンを行うのが定番です：
 
-```bash
+```bash showLineNumbers
 # ステップ1: 全ポートクイックスキャン
 nmap -p- --min-rate=1000 -T4 <target> -oN allports.txt
 
@@ -125,7 +125,7 @@ nmap -sV <target>
 
 ### バージョン検出の強度
 
-```bash
+```bash showLineNumbers
 # 軽い検出（デフォルト）
 nmap -sV <target>
 
@@ -165,7 +165,7 @@ HTBでは`-T4`が一般的に使われます。
 
 ### 詳細なタイミング設定
 
-```bash
+```bash showLineNumbers
 # 最小送信レート
 nmap --min-rate=1000 <target>
 
@@ -190,7 +190,7 @@ nmap -sC <target>
 
 ### スクリプトカテゴリ
 
-```bash
+```bash showLineNumbers
 # 脆弱性スキャン
 nmap --script=vuln <target>
 
@@ -206,7 +206,7 @@ nmap --script=discovery <target>
 
 ### 便利なスクリプト例
 
-```bash
+```bash showLineNumbers
 # SMB脆弱性チェック
 nmap --script=smb-vuln* -p 445 <target>
 
@@ -237,7 +237,7 @@ ls /usr/share/nmap/scripts/ | grep http
 
 ### 出力形式
 
-```bash
+```bash showLineNumbers
 # 通常出力
 nmap -oN output.txt <target>
 
@@ -264,7 +264,7 @@ nmap -sC -sV -oA nmap/initial <target>
 
 ### HTBでの定番フロー
 
-```bash
+```bash showLineNumbers
 # 1. ディレクトリ作成
 mkdir nmap
 
@@ -310,7 +310,7 @@ TCPだけでなく、UDPも確認しましょう。SNMP(161)やDNS(53)など、�
 
 `.bashrc`や`.zshrc`に追加しておくと便利です：
 
-```bash
+```bash showLineNumbers
 # クイック全ポートスキャン
 alias nmapquick='nmap -p- --min-rate=1000 -T4'
 
