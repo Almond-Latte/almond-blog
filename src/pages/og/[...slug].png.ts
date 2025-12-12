@@ -54,7 +54,7 @@ export const GET: APIRoute = async ({ props }) => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #e67e22 0%, #c45d00 100%)',
           padding: '40px',
         },
         children: {
@@ -129,7 +129,7 @@ export const GET: APIRoute = async ({ props }) => {
                         style: {
                           fontSize: '28px',
                           fontWeight: 700,
-                          color: '#667eea',
+                          color: '#e67e22',
                         },
                         children: 'Almond Blog',
                       },
