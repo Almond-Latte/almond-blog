@@ -27,6 +27,16 @@ nmap <target>
 
 これだけで、よく使われる1000ポートをスキャンしてくれます。
 
+### ホスト発見のスキップ (-Pn)
+
+HTBのマシンはPing（ICMP Echo Request）に応答しない設定になっていることが多く、その場合nmapは「ホストがダウンしている」と判断してスキャンを中止してしまいます。
+
+ターゲットが生きていることが確実な場合（HTBなど）は、`-Pn` オプションを付けてホスト発見をスキップするのが無難です。
+
+```bash
+nmap -Pn <target>
+```
+
 ## スキャンタイプ
 
 nmapには様々なスキャンタイプがあります。状況に応じて使い分けましょう。
@@ -61,6 +71,9 @@ nmap -sU <target>
 - **仕組み**: UDPパケットを送信し、ICMPポート到達不能が返ればクローズと判断
 - **特徴**: 非常に時間がかかる（UDPは応答がないことが多い）
 - **ポイント**: `--top-ports 100` などで対象を絞ると効率的
+
+> [!note]
+> UDPスキャンは、ポートが開いている場合に「応答がない」ことが多いです（open|filteredと判定されます）。そのため、TCPスキャンに比べてタイムアウト待ちが発生しやすく、非常に時間がかかります。
 
 ```bash
 # よく使うUDPスキャン
@@ -142,7 +155,8 @@ nmap -sV --version-all <target>
 nmap -O <target>
 ```
 
-ターゲットのOSを推測します。TTLやTCPウィンドウサイズなどの特徴から判断します。
+- **仕組み**: TTLやTCPウィンドウサイズなどの特徴からOSを推測
+- **root権限**: 必要（生のパケットを扱うため）
 
 ## タイミングオプション
 
@@ -283,8 +297,13 @@ nmap -sU --top-ports 20 -oN nmap/udp.txt <target>
 
 ### ワンライナー（全ポート→詳細）
 
-```bash
-ports=$(nmap -p- --min-rate=1000 -T4 <target> | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
+`-oG`（Grepable出力）を使うと、より確実にポート番号を抽出できます。
+
+```bash showLineNumbers
+# 開いているポート番号を抽出して変数に入れる
+ports=$(nmap -p- --min-rate=1000 -T4 <target> -oG - | grep "/open" | awk -F: '{print $2}' | tr -d ' ' | tr ',' '\n' | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//')
+
+# 詳細スキャンを実行
 nmap -p$ports -sC -sV -oA nmap/targeted <target>
 ```
 
