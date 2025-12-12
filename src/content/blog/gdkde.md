@@ -9,7 +9,7 @@ pubDate: '2025-03-18'
 > マルウェア文脈におけるAdversarial Attackを想定しています。
 > 論文: [Evasion attacks against machine learning at test time(2013)](https://link.springer.com/chapter/10.1007/978-3-642-40994-3_25)
 
-# 1. KDE（カーネル密度推定）の基礎
+## 1. KDE（カーネル密度推定）の基礎
 
 カーネル密度推定(Kernel Density Estimation, KDE) は与えられたデータから、その下にある未知の確率密度関数を推定するノンパラ手法。
 
@@ -32,7 +32,7 @@ $$
 ![image](/images/gdkde/wiki.png)
 引用: [カーネル密度推定, Wikipedia](https://ja.wikipedia.org/wiki/%E3%82%AB%E3%83%BC%E3%83%8D%E3%83%AB%E5%AF%86%E5%BA%A6%E6%8E%A8%E5%AE%9A)
 
-# 2. GDKDEとは
+## 2. GDKDEとは
 
 GDKDE(Gradient Descent and  KDE)は、ラプラシアンカーネルを用いた密度推定を攻撃アルゴリズムに組み込むことで、より「自然な」攻撃を。
 
@@ -40,7 +40,7 @@ GDKDE(Gradient Descent and  KDE)は、ラプラシアンカーネルを用いた
 
 しかし、$g(\mathbf{x})$ だけを最小化すると、しばしば決定境界の「穴」のような低密度領域（すなわち局所最小値）にサンプルが移動し、不自然な特徴を持つサンプルになってしまう恐れがある。そこでGDKDEでは、損失関数に密度ペナルティ項を追加し、サンプルがクリーンウェアデータの高密度領域から極端に外れないように誘導する。
 
-## Attack Strategy
+### Attack Strategy
 
 攻撃者の最適な攻撃戦略は、マルウェアサンプル $\mathbf{x}^0$ に対し、$g(\cdot)$ またはその推定値 $\hat{g}(\cdot)$ を最小化するサンプル $\mathbf{x}^*$ を見つけることである。ただし、 $\mathbf{x}^*$ は $\mathbf{x}^0$ からの距離が、以下の制約を満たす必要がある。
 $$
@@ -113,7 +113,7 @@ $$
 $$
 であることから、$O(\frac{1}{nh})$ を考慮しなければならない。目的関数内の $\lambda$ の値を、目的関数内の $\lambda$ の値を、 $\frac{\lambda}{nh}$ の値が識別関数 $\hat{g}(\mathbf{x})$ の値の範囲と同等（またはそれ以上）になるように選択する必要がある。
 
-# 3. アルゴリズム
+## 3. アルゴリズム
 
 1. **初期設定**: 攻撃対象のマルウェアサンプルを$\mathbf{x}^0$ とする。これが初めはモデルにマルウェアと分類されるポイントである。攻撃者は許容できる改変の範囲（例: 元のプログラムからの距離 $d_{\max}$）やステップサイズ $t$, 密度項の重み $\lambda$, 収束判定しきい値 $\epsilon$ を決定する
 2. **勾配計算**: 現在のサンプル $\mathbf{x}^m$ における損失関数 $F(\mathbf{x}^m) = g(\mathbf{x}^m) - \lambda p(\mathbf{x}^m \mid y^c = \text{cleanware})$ の勾配 $\nabla F(\mathbf{x}^m)$ を計算する。これは分類器の出力スコアに関する勾配と、クリーンウェアデータ密度の勾配を組み合わせたものである。$\nabla F(\mathbf{x}^m) = \nabla g(\mathbf{x}^m) - \lambda \nabla p(\mathbf{x}^m|y^c=\text{cleanware})$

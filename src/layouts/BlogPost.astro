@@ -7,9 +7,17 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+type Props = CollectionEntry<'blog'>['data'] & {
+	headings?: Heading[];
+};
+
+const { title, description, pubDate, updatedDate, heroImage, headings = [] } = Astro.props;
 ---
 
 <html lang="en">
@@ -18,9 +26,21 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 		<style>
 			main {
-				width: calc(100% - 2em);
+				width: 100%;
 				max-width: 100%;
 				margin: 0;
+				padding: 1em;
+				overflow-x: hidden;
+			}
+			.container {
+				max-width: 720px;
+				width: 100%;
+				margin: 0 auto;
+				box-sizing: border-box;
+			}
+			article {
+				max-width: 720px;
+				min-width: 0;
 			}
 			.hero-image {
 				width: 100%;
@@ -32,9 +52,6 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				box-shadow: var(--box-shadow);
 			}
 			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
 				padding: 1em;
 				color: rgb(var(--gray-dark));
 			}
@@ -66,35 +83,181 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			.title h1 {
 				font-size: 2.5em;
 			}
+			.toc {
+				width: 300px;
+				flex-shrink: 0;
+				display: none;
+			}
+			.toc nav {
+				position: sticky;
+				top: 5em;
+				background: rgba(var(--gray-light), 0.5);
+				border-radius: 8px;
+				padding: 1em;
+			}
+			.toc h2 {
+				font-size: 0.75em;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				margin-bottom: 0.75em;
+				color: rgb(var(--gray));
+				border-bottom: 1px solid rgba(var(--gray), 0.2);
+				padding-bottom: 0.5em;
+			}
+			.toc ul {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				position: relative;
+			}
+			.toc ul::before {
+				content: '';
+				position: absolute;
+				left: 6px;
+				top: 0.5em;
+				bottom: 0.5em;
+				width: 1px;
+				background: rgba(var(--gray), 0.3);
+			}
+			.toc li {
+				position: relative;
+				margin-bottom: 0;
+			}
+			.toc li::before {
+				content: '';
+				position: absolute;
+				left: 3px;
+				top: 50%;
+				transform: translateY(-50%);
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+				background: rgba(var(--gray), 0.4);
+				transition: background 0.2s ease;
+			}
+			.toc li:hover::before {
+				background: var(--accent);
+			}
+			.toc li.toc-h3::before {
+				width: 5px;
+				height: 5px;
+				left: 4px;
+			}
+			.toc a {
+				font-size: 0.75em;
+				color: rgb(var(--gray));
+				text-decoration: none;
+				display: block;
+				padding: 0.4em 0.5em 0.4em 1.2em;
+				transition: all 0.2s ease;
+				line-height: 1.4;
+				border-radius: 4px;
+			}
+			.toc li.toc-h2 a {
+				font-weight: 700;
+			}
+			.toc li.toc-h3 a {
+				padding-left: 1.8em;
+				font-size: 0.7em;
+			}
+			.toc a:hover {
+				color: var(--accent);
+				background: rgba(var(--gray-light), 0.8);
+			}
+			.toc li.active::before {
+				background: var(--accent);
+			}
+			.toc li.active a {
+				color: var(--accent);
+			}
+			@media (min-width: 920px) {
+				.container {
+					display: flex;
+					justify-content: center;
+					gap: 2em;
+					max-width: 1100px;
+				}
+				.toc {
+					display: block;
+				}
+			}
 		</style>
 	</head>
 
 	<body>
 		<Header />
 		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<BudouX text={title} tag="h1" />
-						<hr />
+			<div class="container">
+				<article>
+					<div class="hero-image">
+						{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
 					</div>
-					<slot />
-				</div>
-			</article>
+					<div class="prose">
+						<div class="title">
+							<div class="date">
+								<FormattedDate date={pubDate} />
+								{
+									updatedDate && (
+										<div class="last-updated-on">
+											Last updated on <FormattedDate date={updatedDate} />
+										</div>
+									)
+								}
+							</div>
+							<BudouX text={title} tag="h1" />
+							<hr />
+						</div>
+						<slot />
+					</div>
+				</article>
+				{headings.length > 0 && (
+					<aside class="toc">
+						<nav>
+							<h2>目次</h2>
+							<ul>
+								{headings.map((heading) => (
+									<li class={heading.depth === 3 ? 'toc-h3' : 'toc-h2'}>
+										<a href={`#${heading.slug}`}>{heading.text}</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					</aside>
+				)}
+			</div>
 		</main>
 		<Footer />
+		<script>
+			function updateTocHighlight() {
+				const headings = document.querySelectorAll('article h2, article h3');
+				const tocLinks = document.querySelectorAll('.toc a');
+
+				if (headings.length === 0 || tocLinks.length === 0) return;
+
+				let currentHeading = '';
+				const offset = 100;
+
+				headings.forEach((heading) => {
+					const rect = heading.getBoundingClientRect();
+					if (rect.top <= offset) {
+						currentHeading = heading.id;
+					}
+				});
+
+				tocLinks.forEach((link) => {
+					const href = link.getAttribute('href');
+					const li = link.parentElement;
+					if (href === `#${currentHeading}`) {
+						li?.classList.add('active');
+					} else {
+						li?.classList.remove('active');
+					}
+				});
+			}
+
+			document.addEventListener('scroll', updateTocHighlight);
+			document.addEventListener('DOMContentLoaded', updateTocHighlight);
+		</script>
 	</body>
 </html>

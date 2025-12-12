@@ -11,11 +11,11 @@ pubDate: '2024-05-08'
 前回: [PythonでVirusTotalからデータ収集する① - JSON形式で保存するところまで](/blog/Fetching-VirusTotal-File-Report-1)
 次回: [PythonでVirusTotalからデータ収集する③ - APIキーの安全な運用と設定ファイル](/blog/Fetching-VirusTotal-File-Report-3)
 
-# 完成形
+## 完成形
 
 完成形は[Githubにて公開](https://github.com/Almond-Latte/Fetching-VirusTotal-File-Report)していますので、そちらも見ていただければと思います。不明点や質問はお気軽にIssueを立ててください！
 
-#  リクエスト制限
+## リクエスト制限
 
 Public APIを利用する際の注意点として、リクエスト制限があります。
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
 ```
 
-# リクエスト制限にかかったら真夜中まで待つ
+## リクエスト制限にかかったら真夜中まで待つ
 
 [VirusTotal APIのリファレンス](https://docs.virustotal.com/reference/errors) を見てみると、 リクエスト制限にかかった場合、`QuotaExceededError` というエラーコード `429` のエラーが返されることが書かれています。また、次のような文言が記載されています。
 
@@ -201,7 +201,7 @@ if __name__ == "__main__":
 これでVirusTotal側に迷惑をかけることなくデータフェッチが可能になりました。
 
 
-# ログ機能をつける
+## ログ機能をつける
 
 ここまででエラー処理を行ってきました。しかし、エラーが起きた際にどのハッシュ値でエラーが起きたのか記録しておかなければ、実用性がありません。そこで、`logging` を使ったログ機能をつけてみます。
 loggingにはいろいろなやり方がありますが、 `Python logging Best Practices` と検索してみるといいです。また、Pythonのドキュメントにも [Logging HOWTO](https://docs.python.org/ja/3/howto/logging.html) がありますので、こちらも必要に応じて参照してください。
@@ -361,7 +361,7 @@ if __name__ == "__main__":
 2024-05-07 18:55:48,180 -     INFO - end
 
 ```
-# プログラム全体
+## プログラム全体
 というわけでリクエスト制限対策とログ機能実装までを行ったスクリプトは以下のようになりました。
 
 ```python
@@ -464,7 +464,7 @@ if __name__ == "__main__":
 ```
 
 
-# まとめ
+## まとめ
 
 今回はリクエスト制限にかかった時の処理と、ログ機能をつけました。
 
