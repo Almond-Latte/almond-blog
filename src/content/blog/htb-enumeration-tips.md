@@ -17,7 +17,7 @@ Hack The Boxでマシンを攻略する際、最も重要なフェーズはEnume
 
 ### ポートスキャン・サービス特定
 
-- [nmap 完全ガイド - ポートスキャンの基礎から応用まで](/blog/htb-enumeration-nmap)
+- [HTB攻略の第一歩 - nmapで確実にポートを見つける方法](/blog/htb-enumeration-nmap)
 
 ### Web Enumeration（予定）
 
@@ -32,7 +32,7 @@ Hack The Boxでマシンを攻略する際、最も重要なフェーズはEnume
 
 ## Enumeration の基本フロー
 
-私が普段行っているEnumerationの流れは以下の通りです：
+私が普段行っているEnumerationの流れは以下の通りです。
 
 1. **クイックポートスキャン** - まず開いているポートを把握
 2. **詳細スキャン** - サービスとバージョンの特定
@@ -44,7 +44,7 @@ Hack The Boxでマシンを攻略する際、最も重要なフェーズはEnume
 
 ## チェックリスト
 
-Enumerationで見落としがないか確認するためのチェックリストです：
+Enumerationで見落としがないか確認するためのチェックリストです。
 
 - [ ] 全ポートスキャン完了（TCP/UDP）
 - [ ] サービスバージョン特定

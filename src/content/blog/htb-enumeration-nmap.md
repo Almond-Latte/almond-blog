@@ -1,6 +1,6 @@
 ---
-title: "nmap 完全ガイド - ポートスキャンの基礎から応用まで"
-description: "HTBでのEnumerationに欠かせないnmapの使い方を、基礎から応用まで詳しく解説します。"
+title: "HTB攻略の第一歩 - nmapで確実にポートを見つける方法"
+description: "HTBでのEnumeration必須ツールnmapの使い方を解説。全ポートスキャン、サービス検出、NSEスクリプトまで実践的なコマンドを紹介します。"
 pubDate: '2025-12-13'
 ---
 
