@@ -9,6 +9,35 @@ pubDate: '2025-12-13'
 
 シリーズ: [HTB Enumeration シリーズ - Initial Foothold への道](/blog/htb-enumeration-tips)
 
+## TL;DR
+
+すぐに使いたい人向けのクイックリファレンスです。
+
+```bash showLineNumbers
+# 1. 準備
+mkdir -p nmap
+
+# 2. 全ポートスキャン（TCP）
+nmap -Pn -p- --min-rate=1000 -T4 <target> -oG nmap/allports.gnmap
+
+# 3. ポート番号を抽出
+grep -oP '\d+/open' nmap/allports.gnmap | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//'
+
+# 4. 詳細スキャン（見つかったポートを指定）
+nmap -Pn -p 22,80,443 -sC -sV -oA nmap/detailed <target>
+
+# 5. UDPスキャン
+nmap -Pn -sU --top-ports 20 -oA nmap/udp <target>
+```
+
+ワンライナー版（全ポート→詳細を一気に実行）
+
+```bash
+mkdir -p nmap && ports=$(nmap -Pn -p- --min-rate=1000 -T4 <target> -oG - | tee nmap/allports.gnmap | grep -oP '\d+/open' | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//') && nmap -Pn -p$ports -sC -sV -oA nmap/targeted <target>
+```
+
+各オプションの詳細は以下で解説します。
+
 ## はじめに
 
 nmap（Network Mapper）は、ネットワーク探索とセキュリティ監査のためのオープンソースツールです。HTBやTHMでマシンを攻略する際、最初に実行するツールといっても過言ではありません。
@@ -19,7 +48,7 @@ nmap（Network Mapper）は、ネットワーク探索とセキュリティ監�
 
 ### 基本的な使い方
 
-最もシンプルな使い方は、ターゲットを指定するだけです：
+最もシンプルな使い方は、ターゲットを指定するだけです。
 
 ```bash
 nmap <target>
@@ -107,7 +136,7 @@ nmap -p 22,80,443 <target>
 # ポート範囲
 nmap -p 1-1000 <target>
 
-# 全ポート（65535）
+# 全ポート（1-65535）
 nmap -p- <target>
 
 # よく使われるポート上位N個
@@ -116,15 +145,8 @@ nmap --top-ports 100 <target>
 
 ### おすすめの使い方
 
-HTBでは、まず全ポートスキャンを行い、その後詳細スキャンを行うのが定番です：
-
-```bash showLineNumbers
-# ステップ1: 全ポートクイックスキャン
-nmap -p- --min-rate=1000 -T4 <target> -oN allports.txt
-
-# ステップ2: 見つかったポートの詳細スキャン
-nmap -p 22,80,443,8080 -sC -sV <target> -oN detailed.txt
-```
+HTBでは、まず全ポートスキャンを行い、その後詳細スキャンを行うのが定番です。
+詳しいワークフローは「[実践的なワークフロー](#実践的なワークフロー)」で解説します。
 
 ## サービス・バージョン検出
 
@@ -139,13 +161,10 @@ nmap -sV <target>
 ### バージョン検出の強度
 
 ```bash showLineNumbers
-# 軽い検出（デフォルト）
-nmap -sV <target>
+# 強度を下げて高速化（デフォルトは7）
+nmap -sV --version-intensity 2 <target>
 
-# より詳細な検出
-nmap -sV --version-intensity 5 <target>
-
-# 全プローブを試す
+# 全プローブを試す（最も詳細）
 nmap -sV --version-all <target>
 ```
 
@@ -192,7 +211,7 @@ nmap --min-parallelism=10 <target>
 
 ## NSE（Nmap Scripting Engine）
 
-nmapの真の力はNSEスクリプトにあります。
+nmapにはNSEスクリプトという強力な機能があります。
 
 ### デフォルトスクリプト (-sC)
 
@@ -253,7 +272,7 @@ ls /usr/share/nmap/scripts/ | grep http
 
 ```bash showLineNumbers
 # 通常出力
-nmap -oN output.txt <target>
+nmap -oN output.nmap <target>
 
 # XML形式
 nmap -oX output.xml <target>
@@ -268,7 +287,7 @@ nmap -oA output <target>
 ### おすすめの出力設定
 
 ```bash
-# 常にファイル出力する習慣を！
+# 常にファイル出力する習慣をつける
 nmap -sC -sV -oA nmap/initial <target>
 ```
 
@@ -278,33 +297,34 @@ nmap -sC -sV -oA nmap/initial <target>
 
 ### HTBでの定番フロー
 
+全ポートスキャンには `-oG`（Grepable出力）を使うと、後からポート番号を抽出しやすくなります。
+
 ```bash showLineNumbers
 # 1. ディレクトリ作成
-mkdir nmap
+mkdir -p nmap
 
 # 2. クイック全ポートスキャン
-nmap -p- --min-rate=1000 -T4 <target> -oN nmap/allports.txt
+nmap -Pn -p- --min-rate=1000 -T4 <target> -oG nmap/allports.gnmap
 
 # 3. 結果から開いているポートを抽出
-cat nmap/allports.txt | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//
+grep -oP '\d+/open' nmap/allports.gnmap | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//'
 
 # 4. 詳細スキャン（上記で見つかったポートを指定）
-nmap -p 22,80,443 -sC -sV -oA nmap/detailed <target>
+nmap -Pn -p 22,80,443 -sC -sV -oA nmap/detailed <target>
 
 # 5. UDPも忘れずに
-nmap -sU --top-ports 20 -oN nmap/udp.txt <target>
+nmap -Pn -sU --top-ports 20 -oA nmap/udp <target>
 ```
 
 ### ワンライナー（全ポート→詳細）
 
-`-oG`（Grepable出力）を使うと、より確実にポート番号を抽出できます。
-
 ```bash showLineNumbers
-# 開いているポート番号を抽出して変数に入れる
-ports=$(nmap -p- --min-rate=1000 -T4 <target> -oG - | grep "/open" | awk -F: '{print $2}' | tr -d ' ' | tr ',' '\n' | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//')
+# ディレクトリ作成 & 全ポートスキャン（ファイルにも保存しつつポート番号を抽出）
+mkdir -p nmap
+ports=$(nmap -Pn -p- --min-rate=1000 -T4 <target> -oG - | tee nmap/allports.gnmap | grep -oP '\d+/open' | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//')
 
 # 詳細スキャンを実行
-nmap -p$ports -sC -sV -oA nmap/targeted <target>
+nmap -Pn -p$ports -sC -sV -oA nmap/targeted <target>
 ```
 
 ## よくある落とし穴と対処法
@@ -327,20 +347,20 @@ TCPだけでなく、UDPも確認しましょう。SNMP(161)やDNS(53)など、�
 
 ## 便利なエイリアス
 
-`.bashrc`や`.zshrc`に追加しておくと便利です：
+`.bashrc`や`.zshrc`に追加しておくと便利です。
 
 ```bash showLineNumbers
 # クイック全ポートスキャン
-alias nmapquick='nmap -p- --min-rate=1000 -T4'
+alias nmapquick='nmap -Pn -p- --min-rate=1000 -T4'
 
 # 詳細スキャン
-alias nmapdetail='nmap -sC -sV -oA nmap/detailed'
+alias nmapdetail='nmap -Pn -sC -sV -oA nmap/detailed'
 
 # フルスキャン（全ポート + 詳細）
 nmapfull() {
     mkdir -p nmap
-    ports=$(nmap -p- --min-rate=1000 -T4 $1 | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
-    nmap -p$ports -sC -sV -oA nmap/full $1
+    ports=$(nmap -Pn -p- --min-rate=1000 -T4 $1 -oG - | tee nmap/allports.gnmap | grep -oP '\d+/open' | cut -d '/' -f 1 | tr '\n' ',' | sed 's/,$//')
+    nmap -Pn -p$ports -sC -sV -oA nmap/full $1
 }
 ```
 
@@ -348,8 +368,9 @@ nmapfull() {
 
 nmapはEnumerationの基礎であり、使いこなせるようになると効率が大幅に上がります。
 
-ポイントをまとめると：
+ポイントをまとめると以下の通りです。
 
+- **ホスト発見をスキップ** (`-Pn`)
 - **全ポートスキャンを忘れない** (`-p-`)
 - **UDPもチェック** (`-sU`)
 - **バージョン検出を行う** (`-sV`)
