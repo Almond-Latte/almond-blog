@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://almond-latte.com/sitemap-index.xml
