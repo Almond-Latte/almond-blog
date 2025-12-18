@@ -45,7 +45,7 @@ body {
 	word-break: auto-phrase;
 	overflow-wrap: break-word;
 	color: rgb(var(--gray-dark));
-	font-size: 20px;
+	font-size: 16px;
 	line-height: 1.7;
 }
 main {
@@ -163,9 +163,11 @@ pre > code {
 }
 blockquote {
 	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
+	padding: 1em 1em 1em 20px;
+	margin: 1em 0;
+	font-size: 1em;
+	background-color: rgba(var(--gray-light), 0.3);
+	border-radius: 4px;
 }
 hr {
 	border: none;
@@ -208,7 +210,7 @@ ul:has(input[type="checkbox"]) input[type="checkbox"]:checked::after {
 }
 @media (max-width: 720px) {
 	body {
-		font-size: 18px;
+		font-size: 16px;
 	}
 	main {
 		padding: 1em;
