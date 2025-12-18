@@ -2,6 +2,8 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import satori from 'satori';
 import sharp from 'sharp';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getCollection('blog');
@@ -36,6 +38,11 @@ export const GET: APIRoute = async ({ props }) => {
     month: 'long',
     day: 'numeric',
   });
+
+  // Load logo as base64
+  const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+  const logoBuffer = fs.readFileSync(logoPath);
+  const logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
 
   const svg = await satori(
     {
@@ -112,14 +119,12 @@ export const GET: APIRoute = async ({ props }) => {
                       },
                     },
                     {
-                      type: 'div',
+                      type: 'img',
                       props: {
+                        src: logoBase64,
                         style: {
-                          fontSize: '28px',
-                          fontWeight: 700,
-                          color: '#e67e22',
+                          height: '56px',
                         },
-                        children: 'Almond Blog',
                       },
                     },
                   ],
