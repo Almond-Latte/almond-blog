@@ -9,11 +9,12 @@ interface Props {
 	description: string;
 	image?: string;
 	ogType?: string;
+	twitterSite?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = '/logo.png', ogType = 'website' } = Astro.props;
+const { title, description, image = '/logo.png', ogType = 'website', twitterSite } = Astro.props;
 
 const organizationSchema = {
 	"@context": "https://schema.org",
@@ -75,6 +76,7 @@ const websiteSchema = {
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
+{twitterSite && <meta property="twitter:site" content={twitterSite} />}
 
 <!-- JSON-LD Structured Data -->
 <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />

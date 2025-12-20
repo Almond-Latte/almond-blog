@@ -45,7 +45,13 @@ const blogPostingSchema = {
 
 <html lang="ja">
 	<head>
-		<BaseHead title={title} description={description} image={ogImageUrl} ogType="article" />
+		<BaseHead
+			title={title}
+			description={description}
+			image={ogImageUrl}
+			ogType="article"
+			twitterSite="@__AlmondLatte__"
+		/>
 		<script type="application/ld+json" set:html={JSON.stringify(blogPostingSchema)} />
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 		<style>
