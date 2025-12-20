@@ -18,10 +18,22 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	headings?: Heading[];
 	ogImage?: string;
 	readingTime?: number;
+	prevPost?: CollectionEntry<'blog'> | null;
+	nextPost?: CollectionEntry<'blog'> | null;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, headings = [], ogImage, readingTime } =
-	Astro.props;
+const {
+	title,
+	description,
+	pubDate,
+	updatedDate,
+	heroImage,
+	headings = [],
+	ogImage,
+	readingTime,
+	prevPost,
+	nextPost,
+} = Astro.props;
 
 const ogImageUrl =
 	ogImage ?? `/og/${Astro.url.pathname.replace('/blog/', '').replace('/', '')}.png`;
@@ -250,6 +262,39 @@ const blogPostingSchema = {
 					max-width: 1100px;
 				}
 			}
+			.post-nav {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+				gap: 1em;
+				margin: 2.5em auto 0;
+				max-width: 720px;
+				padding: 0 1em 2em;
+			}
+			.post-nav a {
+				display: block;
+				border: 1px solid rgba(var(--gray), 0.2);
+				border-radius: 12px;
+				padding: 1em;
+				text-decoration: none;
+				color: rgb(var(--gray-dark));
+				transition: border-color 0.2s ease, box-shadow 0.2s ease;
+			}
+			.post-nav a:hover {
+				border-color: rgba(var(--accent), 0.6);
+				box-shadow: var(--box-shadow);
+			}
+			.post-nav span {
+				display: block;
+				font-size: 0.75em;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: rgb(var(--gray));
+				margin-bottom: 0.5em;
+			}
+			.post-nav strong {
+				font-size: 1em;
+				font-weight: 700;
+			}
 		</style>
 	</head>
 
@@ -297,6 +342,22 @@ const blogPostingSchema = {
 					</aside>
 				)}
 			</div>
+			{(prevPost || nextPost) && (
+				<nav class="post-nav" aria-label="Post navigation">
+					{prevPost && (
+						<a href={`/blog/${prevPost.id}/`}>
+							<span>Previous</span>
+							<strong>{prevPost.data.title}</strong>
+						</a>
+					)}
+					{nextPost && (
+						<a href={`/blog/${nextPost.id}/`}>
+							<span>Next</span>
+							<strong>{nextPost.data.title}</strong>
+						</a>
+					)}
+				</nav>
+			)}
 		</main>
 		<Footer />
 		<script>
