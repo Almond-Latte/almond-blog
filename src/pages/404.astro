@@ -1,0 +1,49 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+---
+
+<html lang="ja">
+	<head>
+		<BaseHead title={`${SITE_TITLE} | 404`} description={SITE_DESCRIPTION} />
+		<style>
+			.wrapper {
+				text-align: center;
+				padding: 6em 1em;
+			}
+			.code {
+				font-size: 4rem;
+				margin: 0 0 0.3em;
+				color: rgb(var(--black));
+			}
+			.message {
+				margin: 0 0 1.5em;
+				color: rgb(var(--gray));
+			}
+			.home-link {
+				display: inline-block;
+				padding: 0.6em 1.2em;
+				border-radius: 999px;
+				background: rgba(var(--gray-light), 0.8);
+				color: rgb(var(--gray-dark));
+				text-decoration: none;
+			}
+			.home-link:hover {
+				color: rgb(var(--accent));
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="wrapper">
+				<p class="code">404</p>
+				<p class="message">ページが見つかりませんでした。</p>
+				<a class="home-link" href="/">トップに戻る</a>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
