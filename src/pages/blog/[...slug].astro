@@ -14,11 +14,8 @@ type Props = CollectionEntry<'blog'>;
 const post = Astro.props;
 const { Content, headings } = await render(post);
 
-// h2 + h3 が15個以上の場合はh2のみ、それ以外はh2 + h3を表示
-const allTocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
-const tocHeadings = allTocHeadings.length >= 15
-	? headings.filter((h) => h.depth === 2)
-	: allTocHeadings;
+// h2 + h3 を目次に表示
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
 <BlogPost {...post.data} headings={tocHeadings}>

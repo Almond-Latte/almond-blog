@@ -96,6 +96,24 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 				background: rgba(var(--gray-light), 0.5);
 				border-radius: 8px;
 				padding: 1em;
+				max-height: calc(100vh - 200px);
+				overflow-y: auto;
+				overflow-x: hidden;
+				position: relative;
+			}
+			.toc nav::-webkit-scrollbar {
+				width: 6px;
+			}
+			.toc nav::-webkit-scrollbar-track {
+				background: rgba(var(--gray-light), 0.3);
+				border-radius: 3px;
+			}
+			.toc nav::-webkit-scrollbar-thumb {
+				background: rgba(var(--gray), 0.4);
+				border-radius: 3px;
+			}
+			.toc nav::-webkit-scrollbar-thumb:hover {
+				background: rgba(var(--gray), 0.6);
 			}
 			.toc h2 {
 				font-size: 0.875em;
@@ -124,7 +142,7 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 			}
 			.toc li {
 				position: relative;
-				margin-bottom: 0;
+				margin-bottom: 0.1em;
 			}
 			.toc li::before {
 				content: '';
@@ -138,9 +156,6 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 				background: rgba(var(--gray), 0.4);
 				transition: background 0.2s ease;
 			}
-			.toc li:hover::before {
-				background: var(--accent);
-			}
 			.toc li.toc-h3::before {
 				width: 5px;
 				height: 5px;
@@ -151,10 +166,8 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 				color: rgb(var(--gray));
 				text-decoration: none;
 				display: block;
-				padding: 0.4em 0.5em 0.4em 1.2em;
-				transition: all 0.2s ease;
-				line-height: 1.4;
-				border-radius: 4px;
+				padding: 0.2em 0.5em 0.2em 1.2em;
+				transition: color 0.2s ease;
 			}
 			.toc li.toc-h2 a {
 				font-weight: 700;
@@ -165,7 +178,9 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 			}
 			.toc a:hover {
 				color: var(--accent);
-				background: rgba(var(--gray-light), 0.8);
+			}
+			.toc li:hover::before {
+				background: var(--accent);
 			}
 			.toc li.active::before {
 				background: var(--accent);
@@ -174,15 +189,17 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 				color: var(--accent);
 			}
 			@media (min-width: 920px) {
+				.toc {
+					display: block;
+				}
+			}
+			@media (min-width: 920px) {
 				.container {
 					display: flex;
 					justify-content: center;
 					align-items: flex-start;
 					gap: 2em;
 					max-width: 1100px;
-				}
-				.toc {
-					display: block;
 				}
 			}
 		</style>
@@ -232,34 +249,53 @@ const { title, description, pubDate, updatedDate, heroImage, headings = [] } = A
 		</main>
 		<Footer />
 		<script>
+			// TOC scroll tracking
+			const tocNav = document.querySelector('.toc nav');
+			let lastActiveElement = null;
+
+			function scrollToActiveHeading(element) {
+				if (!element || !tocNav) return;
+
+				requestAnimationFrame(() => {
+					const navRect = tocNav.getBoundingClientRect();
+					const elementRect = element.getBoundingClientRect();
+					const offset = elementRect.top - navRect.top - tocNav.clientHeight / 2 + elementRect.height / 2;
+
+					tocNav.scrollBy({ top: offset, behavior: 'smooth' });
+				});
+			}
+
 			function updateTocHighlight() {
 				const headings = document.querySelectorAll('article h2, article h3');
 				const tocLinks = document.querySelectorAll('.toc a');
 
-				if (headings.length === 0 || tocLinks.length === 0) return;
-
-				let currentHeading = '';
-				const offset = 100;
-
+				let currentHeading = null;
 				headings.forEach((heading) => {
 					const rect = heading.getBoundingClientRect();
-					if (rect.top <= offset) {
-						currentHeading = heading.id;
+					if (rect.top <= 100) {
+						currentHeading = heading;
 					}
 				});
 
+				let activeElement = null;
 				tocLinks.forEach((link) => {
-					const href = link.getAttribute('href');
 					const li = link.parentElement;
-					if (href === `#${currentHeading}`) {
+					if (currentHeading && link.getAttribute('href') === `#${currentHeading.id}`) {
 						li?.classList.add('active');
+						activeElement = li;
 					} else {
 						li?.classList.remove('active');
 					}
 				});
+
+				// Scroll TOC to active heading only when it changes
+				if (activeElement && activeElement !== lastActiveElement) {
+					scrollToActiveHeading(activeElement);
+					lastActiveElement = activeElement;
+				}
 			}
 
-			document.addEventListener('scroll', updateTocHighlight);
+			window.addEventListener('scroll', updateTocHighlight, { passive: true });
 			document.addEventListener('DOMContentLoaded', updateTocHighlight);
 
 			// Enable checkbox clicking
