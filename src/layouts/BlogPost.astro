@@ -38,8 +38,19 @@ const blogPostingSchema = {
 		"@type": "Person",
 		"name": SITE_TITLE
 	},
+	"publisher": {
+		"@type": "Organization",
+		"name": SITE_TITLE,
+		"logo": {
+			"@type": "ImageObject",
+			"url": new URL('/favicon.png', Astro.site).toString(),
+			"width": 1219,
+			"height": 1219
+		}
+	},
 	"image": ogAbsoluteUrl,
-	"mainEntityOfPage": canonicalUrl.toString()
+	"mainEntityOfPage": canonicalUrl.toString(),
+	"inLanguage": "ja-JP"
 };
 ---
 
