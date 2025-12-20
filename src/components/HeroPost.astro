@@ -1,0 +1,149 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BudouX from './BudouX.astro';
+import FormattedDate from './FormattedDate.astro';
+
+type PostWithExtras = CollectionEntry<'blog'> & { readingTime: number };
+
+interface Props {
+	post: PostWithExtras;
+}
+
+const { post } = Astro.props;
+---
+
+<article class="hero">
+	<div class="hero-card">
+		<a class="media" href={`/blog/${post.id}/`}>
+			{post.data.heroImage ? (
+				<Image width={720} height={360} src={post.data.heroImage} alt={post.data.title} />
+			) : (
+				<img width={720} height={360} src={`/og/${post.id}.png`} alt={post.data.title} />
+			)}
+		</a>
+		<div class="content">
+			<a class="title-link" href={`/blog/${post.id}/`}>
+				<BudouX text={post.data.title} tag="h2" class="title" />
+			</a>
+			{post.data.description && <p class="description">{post.data.description}</p>}
+			<p class="date">
+				<FormattedDate date={post.data.pubDate} />
+				<span class="reading-time">{post.readingTime} min read</span>
+			</p>
+			{post.data.tags?.length > 0 && (
+				<ul class="tags">
+					{post.data.tags.slice(0, 3).map((tag) => (
+						<li>
+							<a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
+						</li>
+					))}
+					{post.data.tags.length > 3 && (
+						<li class="tag-more">+{post.data.tags.length - 3}</li>
+					)}
+				</ul>
+			)}
+		</div>
+	</div>
+</article>
+
+<style>
+	.hero {
+		margin-bottom: 2rem;
+	}
+	.hero-card {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 2rem;
+		padding: 0;
+		background: transparent;
+	}
+	.media img {
+		width: 100%;
+		height: auto;
+		object-fit: cover;
+		border-radius: 12px;
+	}
+	.title-link {
+		text-decoration: none;
+	}
+	:global(.title) {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 1.35rem;
+		font-weight: normal;
+		line-height: 1.4;
+	}
+	.description {
+		margin: 0.6em 0 0.2em;
+		color: rgb(var(--gray-dark));
+	}
+	.date {
+		margin: 0.4em 0 0;
+		color: rgb(var(--gray));
+	}
+	.reading-time {
+		margin-left: 0.6em;
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+	}
+	.tags {
+		display: inline-flex;
+		justify-content: flex-start;
+		flex-wrap: wrap;
+		gap: 0.4em;
+		margin: 0.6em 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.tag {
+		display: inline-block;
+		padding: 0.2em 0.6em;
+		border-radius: 999px;
+		background: rgba(var(--gray-light), 0.8);
+		color: rgb(var(--gray-dark));
+		font-size: 0.8em;
+		text-decoration: none;
+	}
+	.tag:hover {
+		color: rgb(var(--accent));
+	}
+	.tag-more {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.2em 0.6em;
+		border-radius: 999px;
+		background: rgba(var(--gray-light), 0.6);
+		color: rgb(var(--gray));
+		font-size: 0.8em;
+	}
+	.hero-card a:hover :global(.title) {
+		color: rgb(var(--accent));
+	}
+	.hero-card a:hover img {
+		box-shadow: var(--box-shadow);
+	}
+	@media (max-width: 720px) {
+		.hero-card {
+			display: block;
+			text-align: center;
+		}
+		:global(.title) {
+			font-size: 1rem;
+		}
+		.tags {
+			justify-content: center;
+		}
+	}
+	@media (min-width: 720px) {
+		.hero-card {
+			align-items: center;
+		}
+	}
+	@media (max-width: 720px) {
+		.hero-card {
+			grid-template-columns: 1fr;
+			text-align: center;
+		}
+	}
+</style>

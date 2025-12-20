@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import HeroPost from '../components/HeroPost.astro';
 import PostGrid from '../components/PostGrid.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { estimateReadingTime } from '../utils/readingTime';
@@ -13,6 +14,8 @@ const posts = (await getCollection('blog'))
 		readingTime: estimateReadingTime(post.body ?? ''),
 	}))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const [heroPost, ...restPosts] = posts;
 ---
 
 <!doctype html>
@@ -22,6 +25,11 @@ const posts = (await getCollection('blog'))
 		<style>
 			main {
 				width: 960px;
+			}
+			.hero-divider {
+				border: none;
+				border-top: 1px solid rgb(var(--gray-light));
+				margin: 2rem 0;
 			}
 			@media (max-width: 720px) {
 				main {
@@ -34,7 +42,9 @@ const posts = (await getCollection('blog'))
 		<Header />
 		<main>
 			<section>
-				<PostGrid posts={posts} showFeatured={true} />
+				{heroPost && <HeroPost post={heroPost} />}
+				<hr class="hero-divider" />
+				<PostGrid posts={restPosts} />
 			</section>
 		</main>
 		<Footer />

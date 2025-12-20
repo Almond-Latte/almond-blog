@@ -8,13 +8,12 @@ type PostWithExtras = CollectionEntry<'blog'> & { readingTime: number };
 
 interface Props {
 	posts: PostWithExtras[];
-	showFeatured?: boolean;
 }
 
-const { posts, showFeatured = false } = Astro.props;
+const { posts } = Astro.props;
 ---
 
-<ul class:list={['post-list', { 'featured-first': showFeatured }]}>
+<ul class="post-list">
 	{posts.map((post) => (
 		<li>
 			<a href={`/blog/${post.id}/`}>
@@ -60,17 +59,6 @@ const { posts, showFeatured = false } = Astro.props;
 	.post-list li * {
 		text-decoration: none;
 		transition: 0.2s ease;
-	}
-	.post-list.featured-first li:first-child {
-		width: 100%;
-		margin-bottom: 1rem;
-		text-align: center;
-	}
-	.post-list.featured-first li:first-child img {
-		width: 100%;
-	}
-	.post-list.featured-first li:first-child :global(.title) {
-		font-size: 1rem;
 	}
 	.post-list li img {
 		margin-bottom: 0.5rem;
@@ -143,12 +131,6 @@ const { posts, showFeatured = false } = Astro.props;
 		.post-list li {
 			width: 100%;
 			text-align: center;
-		}
-		.post-list.featured-first li:first-child {
-			margin-bottom: 0;
-		}
-		.post-list.featured-first li:first-child .title {
-			font-size: 1rem;
 		}
 	}
 </style>
