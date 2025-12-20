@@ -1,6 +1,7 @@
 ---
 title: "PythonでVirusTotalからデータ収集する③ - APIキーの安全な運用と設定ファイル"
 description: "ハッシュ値を基にVirusTotalから検知情報を取得するPythonスクリプトを作成します。APIキーを用いるスクリプトで、より安全にAPIキーを運用する方法について。"
+tags: ["security", "malware", "python"]
 pubDate: '2024-05-23'
 ---
 

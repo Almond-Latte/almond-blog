@@ -1,6 +1,7 @@
 ---
 title: "Gobuster vs ffuf：どっちを使うべき？その違いと使い分けの結論"
 description: "Go言語製の高速ディレクトリ探索ツールGobusterとffufを徹底比較。基本設計の違い、それぞれの強み、実践的な使い分けワークフローを解説します。"
+tags: ["security", "ctf", "htb", "web", "gobuster", "ffuf"]
 pubDate: '2025-12-18'
 ---
 

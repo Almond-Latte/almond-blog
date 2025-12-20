@@ -1,0 +1,154 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BudouX from './BudouX.astro';
+import FormattedDate from './FormattedDate.astro';
+
+type PostWithExtras = CollectionEntry<'blog'> & { readingTime: number };
+
+interface Props {
+	posts: PostWithExtras[];
+	showFeatured?: boolean;
+}
+
+const { posts, showFeatured = false } = Astro.props;
+---
+
+<ul class:list={['post-list', { 'featured-first': showFeatured }]}>
+	{posts.map((post) => (
+		<li>
+			<a href={`/blog/${post.id}/`}>
+				{post.data.heroImage ? (
+					<Image width={720} height={360} src={post.data.heroImage} alt={post.data.title} />
+				) : (
+					<img width={720} height={360} src={`/og/${post.id}.png`} alt={post.data.title} />
+				)}
+				<BudouX text={post.data.title} tag="h4" class="title" />
+				<p class="date">
+					<FormattedDate date={post.data.pubDate} />
+					<span class="reading-time">{post.readingTime} min read</span>
+				</p>
+				{post.data.tags?.length > 0 && (
+					<ul class="tags">
+						{post.data.tags.slice(0, 3).map((tag) => (
+							<li>
+								<a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
+							</li>
+						))}
+						{post.data.tags.length > 3 && (
+							<li class="tag-more">+{post.data.tags.length - 3}</li>
+						)}
+					</ul>
+				)}
+			</a>
+		</li>
+	))}
+</ul>
+
+<style>
+	.post-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2rem;
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+	}
+	.post-list li {
+		width: calc(50% - 1rem);
+	}
+	.post-list li * {
+		text-decoration: none;
+		transition: 0.2s ease;
+	}
+	.post-list.featured-first li:first-child {
+		width: 100%;
+		margin-bottom: 1rem;
+		text-align: center;
+	}
+	.post-list.featured-first li:first-child img {
+		width: 100%;
+	}
+	.post-list.featured-first li:first-child :global(.title) {
+		font-size: 1rem;
+	}
+	.post-list li img {
+		margin-bottom: 0.5rem;
+		border-radius: 12px;
+	}
+	.post-list li a {
+		display: block;
+	}
+	:global(.title) {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 1rem;
+		font-weight: normal;
+		line-height: 1.4;
+	}
+	.date {
+		margin: 0;
+		color: rgb(var(--gray));
+	}
+	.reading-time {
+		margin-left: 0.6em;
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+	}
+	.tags {
+		display: inline-flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.4em;
+		margin: 0.5em auto 0;
+		padding: 0;
+		list-style: none;
+		max-width: 100%;
+		width: fit-content;
+	}
+	.tags li {
+		width: auto;
+	}
+	.tag {
+		display: inline-block;
+		padding: 0.2em 0.6em;
+		border-radius: 999px;
+		background: rgba(var(--gray-light), 0.8);
+		color: rgb(var(--gray-dark));
+		font-size: 0.8em;
+		text-decoration: none;
+	}
+	.tag:hover {
+		color: rgb(var(--accent));
+	}
+	.tag-more {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.2em 0.6em;
+		border-radius: 999px;
+		background: rgba(var(--gray-light), 0.6);
+		color: rgb(var(--gray));
+		font-size: 0.8em;
+	}
+	.post-list li a:hover :global(.title) {
+		color: rgb(var(--accent));
+	}
+	.post-list a:hover img {
+		box-shadow: var(--box-shadow);
+	}
+	@media (max-width: 720px) {
+		.post-list {
+			gap: 0.5em;
+		}
+		.post-list li {
+			width: 100%;
+			text-align: center;
+		}
+		.post-list.featured-first li:first-child {
+			margin-bottom: 0;
+		}
+		.post-list.featured-first li:first-child .title {
+			font-size: 1rem;
+		}
+	}
+</style>

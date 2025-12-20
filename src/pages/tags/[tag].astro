@@ -1,0 +1,63 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import PostGrid from '../../components/PostGrid.astro';
+import { getCollection } from 'astro:content';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { estimateReadingTime } from '../../utils/readingTime';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	const tags = new Set();
+
+	posts.forEach((post) => {
+		(post.data.tags ?? []).forEach((tag) => tags.add(tag));
+	});
+
+	return Array.from(tags).map((tag) => ({
+		params: { tag },
+	}));
+}
+
+const { tag } = Astro.params;
+const posts = (await getCollection('blog'))
+	.filter((post) => (post.data.tags ?? []).includes(tag))
+	.map((post) => ({
+		...post,
+		readingTime: estimateReadingTime(post.body ?? ''),
+	}))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<html lang="ja">
+	<head>
+		<BaseHead
+			title={`${SITE_TITLE} | #${tag}`}
+			description={`${SITE_DESCRIPTION} - #${tag}`}
+		/>
+		<meta name="robots" content="noindex,follow" />
+		<style>
+			main {
+				width: 960px;
+			}
+			:global(.post-list) {
+				margin-top: 1.5em;
+			}
+			@media (max-width: 720px) {
+				main {
+					width: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>#{tag}</h1>
+			<p class="meta">{posts.length} posts</p>
+			<PostGrid posts={posts} />
+		</main>
+		<Footer />
+	</body>
+</html>

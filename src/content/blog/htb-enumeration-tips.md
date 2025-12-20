@@ -1,6 +1,7 @@
 ---
 title: "HTB Enumeration シリーズ - Initial Foothold への道"
 description: "Hack The Box でのInitial Foothold取得に向けたEnumerationの手法をシリーズで解説します。"
+tags: ["security", "ctf", "htb"]
 pubDate: '2025-12-13'
 ---
 

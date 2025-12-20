@@ -1,6 +1,7 @@
 ---
 title: "GDKDEによるAdversarial Attackの理論"
 description: "GDKDE(Gradient Descent Kernel Density Estimation)の背景理論とそのアルゴリズムについてまとめます。"
+tags: ["security", "malware", "research"]
 pubDate: '2025-03-18'
 ---
 

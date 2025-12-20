@@ -1,6 +1,7 @@
 ---
 title: "PythonでVirusTotalからデータ収集する① - JSON形式で保存するところまで"
 description: "ハッシュ値を基にVirusTotalから検知情報を取得するPythonスクリプトを作成します。正常時にJSON形式として保存するところまで。"
+tags: ["security", "malware", "python"]
 pubDate: '2024-03-24'
 ---
 

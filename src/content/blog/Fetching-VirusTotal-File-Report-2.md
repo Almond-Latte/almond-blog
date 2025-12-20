@@ -1,6 +1,7 @@
 ---
 title: "PythonでVirusTotalからデータ収集する② - リクエスト制限対策とログ機能実装"
 description: "ハッシュ値を基にVirusTotalから検知情報を取得するPythonスクリプトを作成します。Public APIのリクエスト制限を考慮し、さらにログ機能の実装をする。"
+tags: ["security", "malware", "python"]
 pubDate: '2024-05-08'
 ---
 

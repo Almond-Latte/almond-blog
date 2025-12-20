@@ -1,6 +1,7 @@
 ---
 title: "HTB攻略の第一歩 - nmapで確実にポートを見つける方法"
 description: "HTBでのEnumeration必須ツールnmapの使い方を解説。全ポートスキャン、サービス検出、NSEスクリプトまで実践的なコマンドを紹介します。"
+tags: ["security", "ctf", "htb", "network", "nmap"]
 pubDate: '2025-12-13'
 ---
 

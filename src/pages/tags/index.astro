@@ -1,0 +1,70 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { getCollection } from 'astro:content';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+
+const posts = await getCollection('blog');
+const tagCounts = posts.reduce((acc, post) => {
+	(post.data.tags ?? []).forEach((tag) => {
+		acc.set(tag, (acc.get(tag) ?? 0) + 1);
+	});
+	return acc;
+}, new Map());
+
+const tags = Array.from(tagCounts.entries())
+	.map(([tag, count]) => ({ tag, count }))
+	.sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+---
+
+<html lang="ja">
+	<head>
+		<BaseHead title={`${SITE_TITLE} | Tags`} description={SITE_DESCRIPTION} />
+		<meta name="robots" content="noindex,follow" />
+		<style>
+			.tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.6em;
+				list-style: none;
+				padding: 0;
+			}
+			.tag {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.4em;
+				padding: 0.35em 0.8em;
+				border-radius: 999px;
+				background: rgba(var(--gray-light), 0.8);
+				color: rgb(var(--gray-dark));
+				text-decoration: none;
+				font-size: 0.95em;
+			}
+			.tag:hover {
+				color: rgb(var(--accent));
+			}
+			.count {
+				font-size: 0.8em;
+				color: rgb(var(--gray));
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>Tags</h1>
+			<ul class="tags">
+				{tags.map(({ tag, count }) => (
+					<li>
+						<a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>
+							#{tag}
+							<span class="count">{count}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>
