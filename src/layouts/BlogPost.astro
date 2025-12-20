@@ -17,9 +17,11 @@ interface Heading {
 type Props = CollectionEntry<'blog'>['data'] & {
 	headings?: Heading[];
 	ogImage?: string;
+	readingTime?: number;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, headings = [], ogImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, headings = [], ogImage, readingTime } =
+	Astro.props;
 
 const ogImageUrl =
 	ogImage ?? `/og/${Astro.url.pathname.replace('/blog/', '').replace('/', '')}.png`;
@@ -108,6 +110,11 @@ const blogPostingSchema = {
 			}
 			.date {
 				margin-bottom: 0.5em;
+				color: rgb(var(--gray));
+			}
+			.reading-time {
+				margin: 0.25em 0 0;
+				font-size: 0.85em;
 				color: rgb(var(--gray));
 			}
 			.last-updated-on {
@@ -264,6 +271,9 @@ const blogPostingSchema = {
 					}
 				</div>
 				<BudouX text={title} tag="h1" />
+				{typeof readingTime === 'number' && (
+					<p class="reading-time">{readingTime} min read</p>
+				)}
 				<hr />
 			</div>
 			<div class="container">
