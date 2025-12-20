@@ -2,7 +2,18 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import PostGrid from '../components/PostGrid.astro';
+import { getCollection } from 'astro:content';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { estimateReadingTime } from '../utils/readingTime';
+
+const posts = (await getCollection('blog'))
+	.map((post) => ({
+		...post,
+		readingTime: estimateReadingTime(post.body ?? ''),
+	}))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+	.slice(0, 2);
 ---
 
 <html lang="ja">
@@ -12,6 +23,19 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 			.wrapper {
 				text-align: center;
 				padding: 6em 1em;
+			}
+			.recommendations {
+				margin-top: 3em;
+			}
+			.recommendations h2 {
+				font-size: 1em;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: rgb(var(--gray));
+				margin-bottom: 1em;
+			}
+			:global(.post-list) {
+				justify-content: center;
 			}
 			.code {
 				font-size: 4rem;
@@ -42,6 +66,12 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 				<p class="code">404</p>
 				<p class="message">ページが見つかりませんでした。</p>
 				<a class="home-link" href="/">トップに戻る</a>
+				{posts.length > 0 && (
+					<section class="recommendations" aria-label="Recommended posts">
+						<h2>おすすめ記事</h2>
+						<PostGrid posts={posts} />
+					</section>
+				)}
 			</div>
 		</main>
 		<Footer />
