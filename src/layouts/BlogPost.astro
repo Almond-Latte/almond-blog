@@ -15,14 +15,18 @@ interface Heading {
 
 type Props = CollectionEntry<'blog'>['data'] & {
 	headings?: Heading[];
+	ogImage?: string;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, headings = [] } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, headings = [], ogImage } = Astro.props;
+
+const ogImageUrl =
+	ogImage ?? `/og/${Astro.url.pathname.replace('/blog/', '').replace('/', '')}.png`;
 ---
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} image={`/og/${Astro.url.pathname.replace('/blog/', '').replace('/', '')}.png`} />
+		<BaseHead title={title} description={description} image={ogImageUrl} />
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 		<style>
 			main {
