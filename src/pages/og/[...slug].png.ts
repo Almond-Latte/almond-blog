@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ props }) => {
   const { title, pubDate } = props as { title: string; pubDate: Date };
 
   // Load bundled font to avoid network dependency during build.
-  const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansJP-Bold.otf');
+  const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansJP-VF.ttf');
   const fontBuffer = fs.readFileSync(fontPath);
   const fontData = fontBuffer.buffer.slice(
     fontBuffer.byteOffset,
