@@ -16,22 +16,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const GET: APIRoute = async ({ props }) => {
   const { title, pubDate } = props as { title: string; pubDate: Date };
 
-  // Fetch Noto Sans JP font from Google Fonts
-  const fontResponse = await fetch(
-    'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&display=swap'
+  // Load bundled font to avoid network dependency during build.
+  const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansJP-Bold.otf');
+  const fontBuffer = fs.readFileSync(fontPath);
+  const fontData = fontBuffer.buffer.slice(
+    fontBuffer.byteOffset,
+    fontBuffer.byteOffset + fontBuffer.byteLength
   );
-  const css = await fontResponse.text();
-  const fontUrlMatch = css.match(/src: url\(([^)]+)\)/);
-
-  let fontData: ArrayBuffer;
-  if (fontUrlMatch) {
-    const fontUrl = fontUrlMatch[1];
-    const fontRes = await fetch(fontUrl);
-    fontData = await fontRes.arrayBuffer();
-  } else {
-    // Fallback: use a simple font if Google Fonts fails
-    throw new Error('Failed to load font');
-  }
 
   const formattedDate = pubDate.toLocaleDateString('ja-JP', {
     year: 'numeric',
