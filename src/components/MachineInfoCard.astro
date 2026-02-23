@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+	htbMachineImage?: ImageMetadata;
+	title: string;
+}
+
+const { htbMachineImage, title } = Astro.props;
+---
+
+{htbMachineImage && (
+	<div class="machine-info-card">
+		<Image src={htbMachineImage} alt={title} width={htbMachineImage.width} quality={100} />
+	</div>
+)}
+
+<style>
+	.machine-info-card {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 1em;
+	}
+	.machine-info-card img {
+		max-width: 100%;
+		height: auto;
+		border-radius: 12px;
+	}
+</style>

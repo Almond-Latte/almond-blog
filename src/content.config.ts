@@ -14,6 +14,10 @@ const blog = defineCollection({
 			updatedDate: z.coerce.date().optional(),
 			tags: z.array(z.string()).default([]),
 			heroImage: image().optional(),
+			// HTB writeup fields
+			htbStatus: z.enum(['active', 'retired']).optional(),
+			htbDifficulty: z.enum(['easy', 'medium', 'hard', 'insane']).optional(),
+			htbMachineImage: image().optional(),
 		}),
 });
 

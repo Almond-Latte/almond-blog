@@ -1,0 +1,82 @@
+---
+/**
+ * Block spoiler component for multi-line content.
+ * Blurs content with an HTB-green label until clicked or global toggle is enabled.
+ */
+interface Props {
+	label?: string;
+}
+
+const { label = 'ネタバレ注意 - クリックで表示' } = Astro.props;
+---
+
+<div class="spoiler-block" tabindex="0" role="button" aria-label={label}>
+	<div class="spoiler-overlay">
+		<span class="spoiler-label">{label}</span>
+	</div>
+	<div class="spoiler-content">
+		<slot />
+	</div>
+</div>
+
+<style>
+	.spoiler-block {
+		position: relative;
+		margin: 1em 0;
+		overflow: hidden;
+		cursor: pointer;
+	}
+	.spoiler-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(20, 20, 20, 0.15);
+		z-index: 1;
+		transition: opacity 0.3s ease;
+	}
+	.spoiler-label {
+		color: #9fef00;
+		font-weight: 700;
+		font-size: 0.9em;
+		padding: 0.5em 1em;
+		border: 1px solid #9fef00;
+		border-radius: 6px;
+		background: rgba(20, 20, 20, 0.7);
+	}
+	.spoiler-content {
+		padding: 1em;
+		filter: blur(8px);
+		user-select: none;
+		transition: filter 0.3s ease;
+	}
+	.spoiler-block.revealed .spoiler-overlay,
+	:global(.spoilers-visible) .spoiler-block .spoiler-overlay {
+		opacity: 0;
+		pointer-events: none;
+	}
+	.spoiler-block.revealed .spoiler-content,
+	:global(.spoilers-visible) .spoiler-block .spoiler-content {
+		filter: none;
+		user-select: auto;
+	}
+	.spoiler-block.revealed,
+	:global(.spoilers-visible) .spoiler-block {
+		cursor: auto;
+	}
+</style>
+
+<script>
+	document.querySelectorAll('.spoiler-block').forEach((el) => {
+		el.addEventListener('click', () => {
+			el.classList.add('revealed');
+		});
+		el.addEventListener('keydown', (e) => {
+			if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+				e.preventDefault();
+				el.classList.add('revealed');
+			}
+		});
+	});
+</script>

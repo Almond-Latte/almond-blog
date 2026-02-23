@@ -24,7 +24,12 @@ const { post } = Astro.props;
 		</a>
 		<div class="content">
 			<a class="title-link" href={`/blog/${post.id}/`}>
-				<BudouX text={post.data.title} tag="h2" class="title" />
+				<div class="title-row">
+					<BudouX text={post.data.title} tag="h2" class="title" />
+					{post.data.htbStatus === 'active' && (
+						<span class="coming-soon-badge">Coming Soon</span>
+					)}
+				</div>
 			</a>
 			{post.data.description && <p class="description">{post.data.description}</p>}
 			<p class="date">
@@ -63,6 +68,21 @@ const { post } = Astro.props;
 		height: auto;
 		object-fit: cover;
 		border-radius: 12px;
+	}
+	.title-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+	.coming-soon-badge {
+		flex-shrink: 0;
+		background: #9fef00;
+		color: #111;
+		font-size: 0.65em;
+		font-weight: 700;
+		padding: 0.2em 0.6em;
+		border-radius: 6px;
+		white-space: nowrap;
 	}
 	.title-link {
 		text-decoration: none;

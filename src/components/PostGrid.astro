@@ -22,7 +22,12 @@ const { posts } = Astro.props;
 				) : (
 					<img width={720} height={360} src={`/og/${post.id}.png`} alt={post.data.title} />
 				)}
-				<BudouX text={post.data.title} tag="h4" class="title" />
+				<div class="title-row">
+					<BudouX text={post.data.title} tag="h4" class="title" />
+					{post.data.htbStatus === 'active' && (
+						<span class="coming-soon-badge">Coming Soon</span>
+					)}
+				</div>
 				<p class="date">
 					<FormattedDate date={post.data.pubDate} />
 					<span class="reading-time">{post.readingTime} min read</span>
@@ -63,6 +68,21 @@ const { posts } = Astro.props;
 	.post-list li img {
 		margin-bottom: 0.5rem;
 		border-radius: 12px;
+	}
+	.title-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+	.coming-soon-badge {
+		flex-shrink: 0;
+		background: #9fef00;
+		color: #111;
+		font-size: 0.65em;
+		font-weight: 700;
+		padding: 0.2em 0.6em;
+		border-radius: 6px;
+		white-space: nowrap;
 	}
 	.post-list li a {
 		display: block;

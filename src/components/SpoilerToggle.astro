@@ -1,0 +1,77 @@
+---
+/**
+ * Global spoiler toggle switch.
+ * Adds .spoilers-visible class to the parent <article> element when enabled.
+ * Only rendered on HTB writeup pages.
+ */
+---
+
+<div class="spoiler-toggle">
+	<label class="toggle-label">
+		<input type="checkbox" class="toggle-input" id="spoiler-toggle" />
+		<span class="toggle-slider"></span>
+		<span class="toggle-text">Show Spoilers</span>
+	</label>
+</div>
+
+<style>
+	.spoiler-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		margin: 1em 0;
+	}
+	.toggle-label {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+		cursor: pointer;
+		user-select: none;
+	}
+	.toggle-input {
+		display: none;
+	}
+	.toggle-slider {
+		position: relative;
+		width: 44px;
+		height: 24px;
+		background: rgba(var(--gray), 0.3);
+		border-radius: 12px;
+		transition: background 0.3s ease;
+		flex-shrink: 0;
+	}
+	.toggle-slider::after {
+		content: '';
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 18px;
+		height: 18px;
+		background: white;
+		border-radius: 50%;
+		transition: transform 0.3s ease;
+	}
+	.toggle-input:checked + .toggle-slider {
+		background: #9fef00;
+	}
+	.toggle-input:checked + .toggle-slider::after {
+		transform: translateX(20px);
+	}
+	.toggle-text {
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+	}
+</style>
+
+<script>
+	const toggle = document.getElementById('spoiler-toggle') as HTMLInputElement | null;
+	const article = document.querySelector('article');
+
+	toggle?.addEventListener('change', () => {
+		if (toggle.checked) {
+			article?.classList.add('spoilers-visible');
+		} else {
+			article?.classList.remove('spoilers-visible');
+		}
+	});
+</script>

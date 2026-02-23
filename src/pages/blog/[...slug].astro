@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
+import { isActiveWriteup } from '../../utils/filterPosts';
 import { estimateReadingTime } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
@@ -9,29 +10,37 @@ export async function getStaticPaths() {
 		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 	);
 
-	return sortedPosts.map((post, index) => ({
-		params: { slug: post.id },
-		props: {
-			...post,
-			prevPost: sortedPosts[index + 1] ?? null,
-			nextPost: sortedPosts[index - 1] ?? null,
-			relatedPosts: sortedPosts
-				.filter((candidate) => candidate.id !== post.id)
-				.map((candidate) => {
-					const shared = candidate.data.tags.filter((tag) =>
-						post.data.tags.includes(tag),
-					).length;
-					return { candidate, shared };
-				})
-				.filter((item) => item.shared > 0)
-				.sort((a, b) => {
-					if (b.shared !== a.shared) return b.shared - a.shared;
-					return b.candidate.data.pubDate.valueOf() - a.candidate.data.pubDate.valueOf();
-				})
-				.slice(0, 3)
-				.map((item) => item.candidate),
-		},
-	}));
+	// Exclude active writeups from prev/next navigation
+	const navigablePosts = sortedPosts.filter((p) => !isActiveWriteup(p));
+
+	return sortedPosts.map((post) => {
+		const navIndex = navigablePosts.findIndex((p) => p.id === post.id);
+		const isNavigable = navIndex !== -1;
+
+		return {
+			params: { slug: post.id },
+			props: {
+				...post,
+				prevPost: isNavigable ? (navigablePosts[navIndex + 1] ?? null) : null,
+				nextPost: isNavigable ? (navigablePosts[navIndex - 1] ?? null) : null,
+				relatedPosts: sortedPosts
+					.filter((candidate) => candidate.id !== post.id && !isActiveWriteup(candidate))
+					.map((candidate) => {
+						const shared = candidate.data.tags.filter((tag) =>
+							post.data.tags.includes(tag),
+						).length;
+						return { candidate, shared };
+					})
+					.filter((item) => item.shared > 0)
+					.sort((a, b) => {
+						if (b.shared !== a.shared) return b.shared - a.shared;
+						return b.candidate.data.pubDate.valueOf() - a.candidate.data.pubDate.valueOf();
+					})
+					.slice(0, 3)
+					.map((item) => item.candidate),
+			},
+		};
+	});
 }
 type Props = CollectionEntry<'blog'>;
 
@@ -42,6 +51,7 @@ const post = Astro.props as Props & {
 };
 const { Content, headings } = await render(post);
 const readingTime = estimateReadingTime(post.body ?? '');
+const isActive = isActiveWriteup(post);
 
 // h2 + h3 を目次に表示
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
@@ -49,11 +59,47 @@ const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
 <BlogPost
 	{...post.data}
-	headings={tocHeadings}
-	readingTime={readingTime}
+	headings={isActive ? [] : tocHeadings}
+	readingTime={isActive ? undefined : readingTime}
 	prevPost={post.prevPost}
 	nextPost={post.nextPost}
 	relatedPosts={post.relatedPosts}
 >
-	<Content />
+	{isActive ? (
+		<div class="coming-soon">
+			<div class="coming-soon-icon">&#128274;</div>
+			<h2>Coming Soon</h2>
+			<p>この Writeup はマシンが Retired になった際に公開されます。</p>
+			<p class="coming-soon-note">
+				Hack The Box のルールにより、Active マシンの解法は公開できません。
+			</p>
+		</div>
+	) : (
+		<Content />
+	)}
 </BlogPost>
+
+<style>
+	.coming-soon {
+		text-align: center;
+		padding: 3em 1em;
+	}
+	.coming-soon-icon {
+		font-size: 3em;
+		margin-bottom: 0.3em;
+	}
+	.coming-soon h2 {
+		color: #9fef00;
+		font-size: 1.8em;
+		margin: 0 0 0.5em;
+	}
+	.coming-soon p {
+		color: rgb(var(--gray));
+		max-width: 480px;
+		margin: 0.5em auto;
+	}
+	.coming-soon-note {
+		font-size: 0.85em;
+		opacity: 0.7;
+	}
+</style>

@@ -1,0 +1,41 @@
+---
+/**
+ * Inline spoiler component for use within MDX content.
+ * Blurs text until clicked or global spoiler toggle is enabled.
+ */
+---
+
+<span class="spoiler" tabindex="0" role="button" aria-label="ネタバレを表示するにはクリック">
+	<slot />
+</span>
+
+<style>
+	.spoiler {
+		filter: blur(5px);
+		user-select: none;
+		cursor: pointer;
+		transition: filter 0.3s ease;
+		border-radius: 4px;
+		padding: 0 0.15em;
+	}
+	.spoiler.revealed,
+	:global(.spoilers-visible) .spoiler {
+		filter: none;
+		user-select: auto;
+		cursor: auto;
+	}
+</style>
+
+<script>
+	document.querySelectorAll('.spoiler').forEach((el) => {
+		el.addEventListener('click', () => {
+			el.classList.add('revealed');
+		});
+		el.addEventListener('keydown', (e) => {
+			if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+				e.preventDefault();
+				el.classList.add('revealed');
+			}
+		});
+	});
+</script>
