@@ -6,6 +6,7 @@ import Header from '../components/Header.astro';
 import HeroPost from '../components/HeroPost.astro';
 import PostGrid from '../components/PostGrid.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { isActiveWriteup } from '../utils/filterPosts';
 import { estimateReadingTime } from '../utils/readingTime';
 
 const posts = (await getCollection('blog'))
@@ -15,7 +16,8 @@ const posts = (await getCollection('blog'))
 	}))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const [heroPost, ...restPosts] = posts;
+const heroPost = posts.find((post) => !isActiveWriteup(post));
+const restPosts = posts.filter((post) => post !== heroPost);
 ---
 
 <!doctype html>
