@@ -37,7 +37,7 @@
 	box-sizing: border-box;
 }
 body {
-	font-family: "Atkinson", sans-serif;
+	font-family: "Atkinson", "Noto Sans JP", sans-serif;
 	margin: 0;
 	padding: 0;
 	text-align: left;
@@ -153,14 +153,17 @@ code {
 	padding: 2px 5px;
 	background-color: rgb(var(--gray-light));
 	border-radius: 2px;
+	font-family: "Fira Code", "Consolas", "Monaco", monospace;
 }
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
 	overflow-x: auto;
+	font-family: "Fira Code", "Consolas", "Monaco", monospace;
 }
 pre > code {
 	all: unset;
+	font-family: inherit;
 }
 blockquote {
 	border-left: 4px solid var(--accent);

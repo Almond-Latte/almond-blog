@@ -21,7 +21,7 @@ export default defineConfig({
 			},
 			styleOverrides: {
 				borderRadius: '8px',
-				codeFontFamily: 'monospace',
+				codeFontFamily: '"Fira Code", "Consolas", "Monaco", monospace',
 			},
 			frames: {
 				removeCommentsWhenCopyingTerminalFrames: false,
