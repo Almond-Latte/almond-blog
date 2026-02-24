@@ -23,5 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# Active HTB writeups - do not commit actual content
-# When machine retires: change htbStatus to 'retired' and commit
+# Active HTB writeups - drafts are gitignored to prevent leaking solutions
+src/content/blog/_drafts/*
+!src/content/blog/_drafts/.gitkeep

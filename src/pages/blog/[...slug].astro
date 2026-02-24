@@ -52,6 +52,7 @@ const post = Astro.props as Props & {
 const { Content, headings } = await render(post);
 const readingTime = estimateReadingTime(post.body ?? '');
 const isActive = isActiveWriteup(post);
+const showComingSoon = isActive && !import.meta.env.DEV;
 
 // h2 + h3 を目次に表示
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
@@ -59,13 +60,13 @@ const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
 <BlogPost
 	{...post.data}
-	headings={isActive ? [] : tocHeadings}
-	readingTime={isActive ? undefined : readingTime}
+	headings={showComingSoon ? [] : tocHeadings}
+	readingTime={showComingSoon ? undefined : readingTime}
 	prevPost={post.prevPost}
 	nextPost={post.nextPost}
 	relatedPosts={post.relatedPosts}
 >
-	{isActive ? (
+	{showComingSoon ? (
 		<div class="coming-soon">
 			<div class="coming-soon-icon">&#128274;</div>
 			<h2>Coming Soon</h2>
