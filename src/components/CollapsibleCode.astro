@@ -1,0 +1,101 @@
+---
+interface Props {
+	maxHeight?: string;
+}
+
+const { maxHeight = '150px' } = Astro.props;
+---
+
+<div class="collapsible-code" data-max-height={maxHeight}>
+	<div class="collapsible-code-content" style={`max-height: ${maxHeight};`}>
+		<slot />
+	</div>
+	<div class="collapsible-code-overlay">
+		<button class="collapsible-code-toggle" type="button">
+			<span class="toggle-icon">&#x25BC;</span>
+			<span class="toggle-text">クリックで展開</span>
+		</button>
+	</div>
+</div>
+
+<style>
+	.collapsible-code {
+		position: relative;
+	}
+
+	.collapsible-code-content {
+		overflow: hidden;
+		transition: max-height 0.4s ease;
+	}
+
+	.collapsible-code-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: center;
+		align-items: flex-end;
+		padding-bottom: 8px;
+		height: 60px;
+		background: linear-gradient(to bottom, transparent, #282a36 85%);
+		border-radius: 0 0 8px 8px;
+		transition: opacity 0.3s ease;
+	}
+
+	.collapsible-code-toggle {
+		background: none;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 4px;
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 0.8rem;
+		cursor: pointer;
+		padding: 4px 12px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		transition: color 0.2s ease, border-color 0.2s ease;
+	}
+
+	.collapsible-code-toggle:hover {
+		color: rgba(255, 255, 255, 0.95);
+		border-color: rgba(255, 255, 255, 0.4);
+	}
+
+	.toggle-icon {
+		font-size: 0.7rem;
+		transition: transform 0.3s ease;
+	}
+
+	/* Expanded state */
+	.collapsible-code.expanded .collapsible-code-content {
+		max-height: none !important;
+	}
+
+	.collapsible-code.expanded .collapsible-code-overlay {
+		position: relative;
+		height: auto;
+		background: #282a36;
+		padding: 4px 0 8px;
+		border-radius: 0 0 8px 8px;
+		margin-top: -8px;
+	}
+
+	.collapsible-code.expanded .toggle-icon {
+		transform: rotate(180deg);
+	}
+
+</style>
+
+<script>
+	document.querySelectorAll('.collapsible-code').forEach((wrapper) => {
+		const toggle = wrapper.querySelector('.collapsible-code-toggle');
+		const text = wrapper.querySelector('.toggle-text');
+		if (!toggle || !text) return;
+
+		toggle.addEventListener('click', () => {
+			const expanded = wrapper.classList.toggle('expanded');
+			text.textContent = expanded ? '折りたたむ' : 'クリックで展開';
+		});
+	});
+</script>

