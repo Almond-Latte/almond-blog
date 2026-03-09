@@ -18,6 +18,14 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
+      - name: Cache link card assets
+        uses: actions/cache@v4
+        with:
+          path: public/remark-link-card-plus
+          key: link-card-${{ hashFiles('src/content/**/*.mdx', 'src/content/**/*.md') }}
+          restore-keys: |
+            link-card-
+
       - name: Install dependencies
         run: npm ci
 

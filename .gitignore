@@ -23,6 +23,9 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# remark-link-card-plus cache
+public/remark-link-card-plus/
+
 # Active HTB writeups - drafts are gitignored to prevent leaking solutions
 src/content/blog/_drafts/*
 !src/content/blog/_drafts/.gitkeep

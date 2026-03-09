@@ -8,6 +8,7 @@ import { defineConfig } from 'astro/config';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkGithubBlockquoteAlert from 'remark-github-blockquote-alert';
+import remarkLinkCardPlus from 'remark-link-card-plus';
 
 // https://astro.build/config
 export default defineConfig({
@@ -31,7 +32,7 @@ export default defineConfig({
 		sitemap(),
 	],
 	markdown: {
-		remarkPlugins: [remarkMath, remarkGithubBlockquoteAlert],
+		remarkPlugins: [remarkMath, remarkGithubBlockquoteAlert, remarkLinkCardPlus],
 		rehypePlugins: [rehypeKatex],
 	},
 });

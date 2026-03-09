@@ -18,6 +18,7 @@
     "budoux": "^0.7.0",
     "rehype-katex": "^7.0.1",
     "remark-github-blockquote-alert": "^2.0.0",
+    "remark-link-card-plus": "^0.7.3",
     "remark-math": "^6.0.0",
     "satori": "^0.18.3",
     "sharp": "^0.34.5"
