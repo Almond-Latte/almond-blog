@@ -5,7 +5,7 @@ tags: ["security", "ctf", "htb", "writeup"]
 pubDate: '2026-03-07'
 htbStatus: 'retired'
 htbDifficulty: 'easy'
-htbMachineImage: './images/htb-lock/htb-lock.png'
+htbMachineImage: './images/htb-lock/machine.png'
 ---
 
 import CollapsibleCode from '../../components/CollapsibleCode.astro';
@@ -169,32 +169,32 @@ nmapの結果から、以下のことがわかりました。
 
 ### Gitea
 
-![Gitea トップページ](./images/htb-lock/htb-lock-gitea.png)
+![Gitea トップページ](./images/htb-lock/gitea.png)
 
 Giteaのデフォルトのトップページが表示されました。
 
 色々見て回ります。
 まず、リポジトリの一覧ページにアクセスしてみます。
 
-![Gitea リポジトリ一覧](./images/htb-lock/htb-lock-gitea-repos.png)
+![Gitea リポジトリ一覧](./images/htb-lock/gitea-repos.png)
 
 `ellen.freeman/dev-scripts` というリポジトリが1つだけ存在していました。
 
-![Gitea ユーザ一覧](./images/htb-lock/htb-lock-gitea-users.png)
+![Gitea ユーザ一覧](./images/htb-lock/gitea-users.png)
 
 また、ユーザ一覧ページを確認すると、 `ellen.freeman` と `Administrator` というユーザが存在していました。
 
-![Gitea Organizations](./images/htb-lock/htb-lock-gitea-orgs.png)
+![Gitea Organizations](./images/htb-lock/gitea-orgs.png)
 
 Organizationsは特に何もありませんでした。
 
 次に、`dev-scripts` リポジトリの中身を確認してみます。
 
-![dev-scripts リポジトリ](./images/htb-lock/htb-lock-gitea-devscripts.png)
+![dev-scripts リポジトリ](./images/htb-lock/gitea-devscripts.png)
 
 `repos.py` というPythonスクリプトが1つだけあり、2コミット、1ブランチという構成です。
 
-![repos.py](./images/htb-lock/htb-lock-gitea-repospy.png)
+![repos.py](./images/htb-lock/gitea-repospy.png)
 
 このスクリプトはGiteaのAPIを使用して、リポジトリ一覧を取得するスクリプトのようです。
 トークン自体は流石に書かれていませんでした。
@@ -248,7 +248,7 @@ if __name__ == "__main__":
 
 と思ったのですが、2回あったリポジトリのコミット履歴を見てみると、`PERSONAL_ACCESS_TOKEN` がめちゃめちゃ書かれていました。
 
-![コミット履歴](./images/htb-lock/htb-lock-gitea-commit-diff.png)
+![コミット履歴](./images/htb-lock/gitea-commit-diff.png)
 
 `# store this in env instead at some point` とご丁寧に書いてありますね :)
 
@@ -858,7 +858,7 @@ CI/CD integration is now active - changes to the repository will automatically b
 
 ちゃんと確認してなかったのですが、80番ポートで動いているWebサイトがこの `index.html`ですね。
 
-![80番ポートのWebサイト](./images/htb-lock/htb-lock-website.png)
+![80番ポートのWebサイト](./images/htb-lock/website.png)
 
 また、 `readme.md` に以下の記述がありました。
 
@@ -932,11 +932,11 @@ To http://10.129.234.64:3000/ellen.freeman/website.git
 
 では、少し待ってから、 `cmdasp.aspx` にアクセスしてみます。
 
-![cmdasp.aspxにアクセス](./images/htb-lock/htb-lock-webshell.png)
+![cmdasp.aspxにアクセス](./images/htb-lock/webshell.png)
 
 アクセスできましたね。コマンドを実行してみます。
 
-![webshell - whoami](./images/htb-lock/htb-lock-webshell-whoami.png)
+![webshell - whoami](./images/htb-lock/webshell-whoami.png)
 
 うまくいきました。 `lock\ellen.freeman` というユーザでアクセスできていることがわかります。
 
@@ -953,7 +953,7 @@ listening on [any] 9001 ...
 
 ペイロードは [Reverse Shell Generator](https://www.revshells.com/) を利用して、`Powershell #3 (Base64)` 選択しました。
 
-![Reverse Shell Generator](./images/htb-lock/htb-lock-revshell.png)
+![Reverse Shell Generator](./images/htb-lock/revshell.png)
 
 ```bash
 ┌──(kali㉿kali)-[~/htb/lock.htb/website]
@@ -1299,13 +1299,13 @@ Do you trust the above certificate? (Y/T/N) [09:13:31:206] [213427:000341b5] [ER
 ```
 </CollapsibleCode>
 
-![xfreerdpでログインできた](./images/htb-lock/htb-lock-rdp.png)
+![xfreerdpでログインできた](./images/htb-lock/rdp.png)
 
 あれ、ログインできました。nxc rdp ではなぜ失敗したんでしょうね...謎です。
 
 デスクトップに `user.txt` があるので、さっそく取ります。
 
-![user.txt](./images/htb-lock/htb-lock-usertxt.png)
+![user.txt](./images/htb-lock/usertxt.png)
 
 ## Privilege Escalation
 
@@ -1360,7 +1360,7 @@ PS C:\Users\gale.dekarios>
 ただ、デスクトップにPDF24というソフトのショートカットがありました。
 メタ読みですが、使わないソフトをインストールしている意味はないので、もしかしたらこれを使って権限昇格できるかもしれません。
 
-![PDF24 デスクトップ](./images/htb-lock/htb-lock-desktop-pdf24.png)
+![PDF24 デスクトップ](./images/htb-lock/desktop-pdf24.png)
 
 まずは、このPDF24のバージョンを確認して、脆弱性がないか調べてみます。
 
@@ -1560,47 +1560,47 @@ msiexec.exe /fa "C:\Users\Gale.Dekarios\Downloads\pdf24-creator-11.15.1-x64.msi"
 
 ```
 
-![MSI修復の実行](./images/htb-lock/htb-lock-msi-repair.png)
+![MSI修復の実行](./images/htb-lock/msi-repair.png)
 
 MSI修復が開始されました。しばらく待つと、SetOpLock側で `faxPrnInst.log` がロックされた通知が表示されます。
 
-![Oplockによるファイルロック](./images/htb-lock/htb-lock-msi-oplock.png)
+![Oplockによるファイルロック](./images/htb-lock/msi-oplock.png)
 
 Oplockによりファイルがロックされた状態で、タイトルバーに `Select C:\Program Files\PDF24\pdf24-PrinterInstall.exe` と表示されたcmdウィンドウがSYSTEM権限で開きました。
 
-![SYSTEM権限のcmdウィンドウ](./images/htb-lock/htb-lock-system-cmd.png)
+![SYSTEM権限のcmdウィンドウ](./images/htb-lock/system-cmd.png)
 
 さらにPoCの手順通りに進めます。cmdウィンドウのタイトルバーを右クリックして、Propertiesを開きます。
 
-![cmdウィンドウのProperties](./images/htb-lock/htb-lock-cmd-properties.png)
+![cmdウィンドウのProperties](./images/htb-lock/cmd-properties.png)
 
 Optionsタブを開きます。
 
-![Optionsタブ](./images/htb-lock/htb-lock-cmd-options.png)
+![Optionsタブ](./images/htb-lock/cmd-options.png)
 
 「legacy console mode」や「new console features」のリンクをクリックすると、ブラウザ選択ダイアログが表示されます。ここでFirefoxを選びます。
 
-![ブラウザ選択ダイアログ](./images/htb-lock/htb-lock-cmd-open-browser.png)
+![ブラウザ選択ダイアログ](./images/htb-lock/cmd-open-browser.png)
 
 FirefoxがSYSTEM権限で起動しました。
 
-![SYSTEM権限のFirefox](./images/htb-lock/htb-lock-firefox-system.png)
+![SYSTEM権限のFirefox](./images/htb-lock/firefox-system.png)
 
 Ctrl+Oでファイルを開くダイアログを表示します。System32ディレクトリが表示されています。
 
-![ファイルを開くダイアログ](./images/htb-lock/htb-lock-firefox-openfile.png)
+![ファイルを開くダイアログ](./images/htb-lock/firefox-openfile.png)
 
 アドレスバーに `C:\Windows\System32\cmd.exe` を入力してEnterを押します。
 
-![cmd.exeのパスを入力](./images/htb-lock/htb-lock-firefox-cmd-path.png)
+![cmd.exeのパスを入力](./images/htb-lock/firefox-cmd-path.png)
 
 SYSTEM権限の cmd が起動しました🎉 `whoami` で `nt authority\system` であることを確認できます。
 
-![SYSTEM権限のシェル](./images/htb-lock/htb-lock-system-shell.png)
+![SYSTEM権限のシェル](./images/htb-lock/system-shell.png)
 
 `root.txt` を取得します。
 
-![root.txt](./images/htb-lock/htb-lock-roottxt.png)
+![root.txt](./images/htb-lock/roottxt.png)
 
 ## まとめ
 
