@@ -223,7 +223,7 @@ loggingにはいろいろなやり方がありますが、 `Python logging Best 
 また、ここでは `logging.info()` のようにルートロガーを使うことは避け、`getLogger` で自前のロガーを用意することにします。これについては以下のようなサイトが参考になると思います。
 
 
-[ログ出力のための print と import logging はやめてほしい](https://qiita.com/amedama/items/b856b2f30c2f38665701)
+https://qiita.com/amedama/items/b856b2f30c2f38665701
 
 ```python
 from logging import INFO, getLogger
